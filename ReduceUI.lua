@@ -48,54 +48,17 @@ Library.Presets = {
 	Rose = { Accent = Color3.fromRGB(244, 114, 182) },
 	Violet = { Accent = Color3.fromRGB(167, 139, 250) },
 	Amber = { Accent = Color3.fromRGB(251, 191, 36) },
-	Halloween = {
-		Accent = Color3.fromRGB(255, 140, 40),
-		Background = Color3.fromRGB(8, 6, 10),
-		Sidebar = Color3.fromRGB(12, 8, 14),
-		Card = Color3.fromRGB(18, 14, 20),
-		Input = Color3.fromRGB(11, 8, 13),
-		Active = Color3.fromRGB(55, 30, 12),
-		Stroke = Color3.fromRGB(48, 32, 18),
-		StrokeLight = Color3.fromRGB(120, 65, 25),
-		Text = Color3.fromRGB(255, 248, 240),
-		Muted = Color3.fromRGB(175, 155, 135),
-		Dim = Color3.fromRGB(120, 100, 85),
-		Dot = Color3.fromRGB(110, 70, 35),
-		Notes = {
-			Green = { Text = Color3.fromRGB(255, 140, 40), Bg = Color3.fromRGB(50, 28, 10) },
-			Yellow = { Text = Color3.fromRGB(255, 200, 60), Bg = Color3.fromRGB(55, 40, 10) },
-			Red = { Text = Color3.fromRGB(255, 80, 70), Bg = Color3.fromRGB(55, 18, 18) },
-			Gray = { Text = Color3.fromRGB(170, 150, 135), Bg = Color3.fromRGB(30, 26, 28) },
-			Blue = { Text = Color3.fromRGB(160, 140, 255), Bg = Color3.fromRGB(26, 20, 50) },
-		},
-	},
-	Christmas = {
-		Accent = Color3.fromRGB(230, 50, 50),
-		Background = Color3.fromRGB(6, 10, 12),
-		Sidebar = Color3.fromRGB(8, 14, 12),
-		Card = Color3.fromRGB(14, 20, 18),
-		Input = Color3.fromRGB(9, 13, 12),
-		Active = Color3.fromRGB(25, 55, 35),
-		Stroke = Color3.fromRGB(28, 45, 38),
-		StrokeLight = Color3.fromRGB(50, 110, 70),
-		Text = Color3.fromRGB(250, 252, 250),
-		Muted = Color3.fromRGB(150, 175, 160),
-		Dim = Color3.fromRGB(100, 120, 110),
-		Dot = Color3.fromRGB(60, 120, 80),
-		Notes = {
-			Green = { Text = Color3.fromRGB(50, 220, 110), Bg = Color3.fromRGB(12, 48, 28) },
-			Yellow = { Text = Color3.fromRGB(255, 215, 50), Bg = Color3.fromRGB(50, 42, 10) },
-			Red = { Text = Color3.fromRGB(255, 90, 90), Bg = Color3.fromRGB(55, 18, 18) },
-			Gray = { Text = Color3.fromRGB(155, 170, 160), Bg = Color3.fromRGB(28, 32, 30) },
-			Blue = { Text = Color3.fromRGB(140, 220, 255), Bg = Color3.fromRGB(14, 30, 48) },
-		},
-	},
 }
 local DefaultTheme = {}
 for k, v in pairs(Theme) do
 	if k ~= "Notes" then
 		DefaultTheme[k] = v
 	end
+end
+
+local DefaultNotes = {}
+for k, v in pairs(Theme.Notes) do
+	DefaultNotes[k] = { Text = v.Text, Bg = v.Bg }
 end
 
 local WindowClass = {}
@@ -617,6 +580,9 @@ function Library:SetTheme(t)
 		for k, v in pairs(DefaultTheme) do
 			Theme[k] = v
 		end
+		for k, v in pairs(DefaultNotes) do
+			Theme.Notes[k] = { Text = v.Text, Bg = v.Bg }
+		end
 		t = preset
 	end
 	local hadAccent = t.Accent ~= nil
@@ -826,437 +792,6 @@ local function makeNote(parent, text, colorKey)
 	return pill, lbl
 end
 
--- High-quality seasonal decorations (procedural + curated assets)
-local SEASONAL_IMAGES = {
-	-- Curated public assets (thumbnail endpoint for reliable UI load)
-	Bat = "rbxthumb://type=Asset&id=13915312936&w=150&h=150",
-	Moon = "rbxthumb://type=Asset&id=5758643056&w=150&h=150",
-	Pumpkin = "rbxthumb://type=Asset&id=5634829236&w=150&h=150",
-	Web = "rbxthumb://type=Asset&id=18912486432&w=420&h=420",
-	Snowflake = "rbxthumb://type=Asset&id=6034320993&w=150&h=150",
-	Tree = "rbxthumb://type=Asset&id=15171016920&w=150&h=150",
-	SantaHat = "rbxthumb://type=Asset&id=15224275868&w=150&h=150",
-}
-
-local function fxImg(parent, image, size, pos, anchor, trans, z, color, rot)
-	local s = typeof(size) == "number" and UDim2.fromOffset(size, size) or size
-	return create("ImageLabel", {
-		BackgroundTransparency = 1,
-		Image = image,
-		Size = s,
-		Position = pos or UDim2.new(),
-		AnchorPoint = anchor or Vector2.new(0, 0),
-		ImageTransparency = trans or 0.15,
-		ImageColor3 = color or Color3.new(1, 1, 1),
-		Rotation = rot or 0,
-		ScaleType = Enum.ScaleType.Fit,
-		ZIndex = z or 1,
-		Parent = parent,
-	})
-end
-
-local function softCircle(parent, size, pos, color, trans, z)
-	return create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = pos,
-		Size = UDim2.fromOffset(size, size),
-		BackgroundColor3 = color,
-		BackgroundTransparency = trans,
-		ZIndex = z or 0,
-		Parent = parent,
-	}, { corner(math.ceil(size / 2)) })
-end
-
--- Simple bat silhouette built from frames (always works, no asset dependency)
-local function makeBatSilhouette(parent, size, pos, trans)
-	local holder = create("Frame", {
-		BackgroundTransparency = 1,
-		Size = UDim2.fromOffset(size, size * 0.55),
-		Position = pos,
-		ZIndex = 2,
-		Parent = parent,
-	})
-	local body = create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.55),
-		Size = UDim2.fromOffset(size * 0.28, size * 0.22),
-		BackgroundColor3 = Color3.fromRGB(18, 14, 20),
-		BackgroundTransparency = trans,
-		ZIndex = 3,
-		Parent = holder,
-	}, { corner(size * 0.12) })
-	-- left wing
-	local lw = create("Frame", {
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.fromScale(0.42, 0.45),
-		Size = UDim2.fromOffset(size * 0.42, size * 0.28),
-		BackgroundColor3 = Color3.fromRGB(18, 14, 20),
-		BackgroundTransparency = trans,
-		Rotation = -18,
-		ZIndex = 2,
-		Parent = holder,
-	}, { corner(4) })
-	-- right wing
-	local rw = create("Frame", {
-		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.fromScale(0.58, 0.45),
-		Size = UDim2.fromOffset(size * 0.42, size * 0.28),
-		BackgroundColor3 = Color3.fromRGB(18, 14, 20),
-		BackgroundTransparency = trans,
-		Rotation = 18,
-		ZIndex = 2,
-		Parent = holder,
-	}, { corner(4) })
-	-- head
-	create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.28),
-		Size = UDim2.fromOffset(size * 0.18, size * 0.16),
-		BackgroundColor3 = Color3.fromRGB(18, 14, 20),
-		BackgroundTransparency = trans,
-		ZIndex = 3,
-		Parent = holder,
-	}, { corner(size * 0.08) })
-	return holder, lw, rw
-end
-
-local function spawnHalloweenEffects(parent, connections)
-	local layer = create("Frame", {
-		Name = "SeasonalFX",
-		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 1,
-		ZIndex = 0,
-		ClipsDescendants = true,
-		Parent = parent,
-	})
-
-	-- deep night overlay
-	create("Frame", {
-		Size = UDim2.fromScale(1, 1),
-		BackgroundColor3 = Color3.fromRGB(4, 2, 8),
-		BackgroundTransparency = 0.72,
-		ZIndex = 0,
-		Parent = layer,
-	})
-
-	-- large ambient orange glows (screenshot-style atmosphere)
-	local glowSpots = {
-		{ 0.15, 0.2, 160, 0.93 }, { 0.45, 0.35, 200, 0.95 },
-		{ 0.75, 0.15, 140, 0.92 }, { 0.85, 0.7, 180, 0.94 },
-		{ 0.25, 0.75, 150, 0.93 }, { 0.55, 0.55, 120, 0.95 },
-	}
-	for i, g in ipairs(glowSpots) do
-		local orb = softCircle(layer, g[3], UDim2.new(g[1], 0, g[2], 0), Color3.fromRGB(255, 120, 30), g[4], 0)
-		task.spawn(function()
-			local phase = i * 0.9
-			while orb.Parent do
-				local t = os.clock() + phase
-				orb.BackgroundTransparency = g[4] - 0.02 + math.sin(t * 0.5) * 0.025
-				task.wait(0.1)
-			end
-		end)
-	end
-
-	-- bright moon with glow
-	local moonGlow = softCircle(layer, 110, UDim2.new(0.82, 0, 0.1, 0), Color3.fromRGB(255, 230, 180), 0.88, 0)
-	local moon = softCircle(layer, 70, UDim2.new(0.82, 0, 0.1, 0), Color3.fromRGB(255, 250, 230), 0.05, 1)
-	-- crater / crescent cut
-	create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.new(0.855, 0, 0.085, 0),
-		Size = UDim2.fromOffset(48, 48),
-		BackgroundColor3 = Color3.fromRGB(8, 6, 10),
-		BackgroundTransparency = 0.35,
-		ZIndex = 2,
-		Parent = layer,
-	}, { corner(24) })
-	task.spawn(function()
-		while moonGlow.Parent do
-			local t = os.clock()
-			moonGlow.BackgroundTransparency = 0.86 + math.sin(t * 0.4) * 0.03
-			task.wait(0.12)
-		end
-	end)
-
-	-- dense bat flock (procedural silhouettes — always visible)
-	local batData = {
-		{ 0.05, 0.06, 34 }, { 0.14, 0.03, 26 }, { 0.24, 0.08, 30 },
-		{ 0.36, 0.02, 22 }, { 0.48, 0.07, 36 }, { 0.58, 0.04, 24 },
-		{ 0.68, 0.09, 28 }, { 0.9, 0.05, 32 }, { 0.1, 0.15, 20 },
-		{ 0.3, 0.14, 18 }, { 0.52, 0.16, 22 }, { 0.75, 0.13, 26 },
-		{ 0.92, 0.18, 20 }, { 0.42, 0.11, 16 }, { 0.18, 0.2, 18 },
-	}
-	for i, b in ipairs(batData) do
-		local holder, lw, rw = makeBatSilhouette(layer, b[3], UDim2.new(b[1], 0, b[2], 0), 0.12 + (i % 4) * 0.04)
-		task.spawn(function()
-			local bx, by = b[1], b[2]
-			local phase = i * 0.55
-			local speed = 0.35 + (i % 5) * 0.07
-			while holder.Parent do
-				local t = os.clock() + phase
-				holder.Position = UDim2.new(bx + math.sin(t * speed) * 0.03, 0, by + math.sin(t * (speed + 0.15)) * 0.018, 0)
-				holder.Rotation = math.sin(t * 1.1) * 10
-				-- wing flap
-				if lw and rw then
-					lw.Rotation = -18 + math.sin(t * 4.5) * 14
-					rw.Rotation = 18 - math.sin(t * 4.5) * 14
-				end
-				task.wait(0.033)
-			end
-		end)
-	end
-
-	-- corner spider webs (image + radial line fallback)
-	local function addWeb(anchor, pos, rot, size)
-		local web = fxImg(layer, SEASONAL_IMAGES.Web, size, pos, anchor, 0.5, 1, Color3.fromRGB(210, 200, 190), rot)
-		-- extra radial threads for density if image is sparse
-		local threads = create("Frame", {
-			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(size * 0.7, size * 0.7),
-			AnchorPoint = anchor,
-			Position = pos,
-			Rotation = rot,
-			ZIndex = 1,
-			Parent = layer,
-		})
-		for a = 0, 5 do
-			local ang = a * 30 - 15
-			create("Frame", {
-				AnchorPoint = Vector2.new(0, 0.5),
-				Position = UDim2.fromScale(0.5, 0.5),
-				Size = UDim2.new(0.48, 0, 0, 1),
-				BackgroundColor3 = Color3.fromRGB(180, 170, 160),
-				BackgroundTransparency = 0.7,
-				Rotation = ang,
-				ZIndex = 1,
-				Parent = threads,
-			})
-		end
-		return web
-	end
-	addWeb(Vector2.new(0, 0), UDim2.fromOffset(-8, -8), -10, 130)
-	addWeb(Vector2.new(1, 0), UDim2.new(1, 8, 0, -6), 12, 120)
-	addWeb(Vector2.new(0, 1), UDim2.new(0, -10, 1, 6), 18, 110)
-
-	-- glowing jack-o-lanterns bottom-left
-	for i = 1, 4 do
-		local px = 0.02 + (i - 1) * 0.06
-		local py = 0.87 + (i % 2) * 0.025
-		local glow = softCircle(layer, 36 + i * 4, UDim2.new(px + 0.02, 0, py + 0.02, 0), Color3.fromRGB(255, 140, 30), 0.75, 1)
-		local pk = fxImg(layer, SEASONAL_IMAGES.Pumpkin, 26 + i * 5, UDim2.new(px, 0, py, 0), nil, 0.05, 3, Color3.fromRGB(255, 200, 100))
-		task.spawn(function()
-			local phase = i * 1.3
-			while pk.Parent do
-				local t = os.clock() + phase
-				pk.Rotation = math.sin(t * 0.6) * 6
-				glow.BackgroundTransparency = 0.7 + math.sin(t * 1.2) * 0.08
-				task.wait(0.06)
-			end
-		end)
-	end
-
-	-- floating orange ember particles
-	for i = 1, 14 do
-		local ember = softCircle(
-			layer,
-			3 + math.random(0, 4),
-			UDim2.new(math.random() * 0.9 + 0.05, 0, math.random() * 0.7 + 0.15, 0),
-			Color3.fromRGB(255, 150 + math.random(0, 60), 40),
-			0.25 + math.random() * 0.35,
-			2
-		)
-		task.spawn(function()
-			local x = ember.Position.X.Scale
-			local y = ember.Position.Y.Scale
-			local phase = math.random() * 8
-			while ember.Parent do
-				local t = os.clock() + phase
-				y = y - 0.004
-				if y < -0.05 then
-					y = 0.95
-					x = math.random() * 0.9 + 0.05
-				end
-				ember.Position = UDim2.new(x + math.sin(t * 0.8) * 0.012, 0, y, 0)
-				ember.BackgroundTransparency = 0.2 + math.abs(math.sin(t * 2)) * 0.4
-				task.wait(0.05)
-			end
-		end)
-	end
-
-	return layer
-end
-
-local function spawnChristmasEffects(parent, connections)
-	local layer = create("Frame", {
-		Name = "SeasonalFX",
-		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 1,
-		ZIndex = 0,
-		ClipsDescendants = true,
-		Parent = parent,
-	})
-
-	-- cool winter overlay
-	create("Frame", {
-		Size = UDim2.fromScale(1, 1),
-		BackgroundColor3 = Color3.fromRGB(2, 8, 12),
-		BackgroundTransparency = 0.78,
-		ZIndex = 0,
-		Parent = layer,
-	})
-
-	-- festive colored glows
-	local glows = {
-		{ 0.12, 0.2, Color3.fromRGB(230, 40, 40), 160 },
-		{ 0.4, 0.4, Color3.fromRGB(30, 180, 80), 180 },
-		{ 0.7, 0.18, Color3.fromRGB(255, 200, 40), 140 },
-		{ 0.88, 0.65, Color3.fromRGB(230, 40, 40), 150 },
-		{ 0.25, 0.72, Color3.fromRGB(30, 180, 80), 130 },
-	}
-	for i, g in ipairs(glows) do
-		local orb = softCircle(layer, g[4], UDim2.new(g[1], 0, g[2], 0), g[3], 0.93, 0)
-		task.spawn(function()
-			local phase = i * 0.8
-			while orb.Parent do
-				local t = os.clock() + phase
-				orb.BackgroundTransparency = 0.91 + math.sin(t * 0.55) * 0.03
-				task.wait(0.1)
-			end
-		end)
-	end
-
-	-- string lights along top edge
-	local lightColors = {
-		Color3.fromRGB(255, 60, 60),
-		Color3.fromRGB(50, 220, 90),
-		Color3.fromRGB(255, 210, 40),
-		Color3.fromRGB(80, 180, 255),
-		Color3.fromRGB(255, 120, 200),
-	}
-	for i = 1, 22 do
-		local c = lightColors[((i - 1) % #lightColors) + 1]
-		local bulb = softCircle(layer, 7, UDim2.new(0.04 + (i - 1) * 0.043, 0, 0.02 + math.sin(i * 0.7) * 0.008, 0), c, 0.15, 3)
-		local halo = softCircle(layer, 16, bulb.Position, c, 0.85, 2)
-		halo.AnchorPoint = Vector2.new(0.5, 0.5)
-		task.spawn(function()
-			local phase = i * 0.35
-			while bulb.Parent do
-				local t = os.clock() + phase
-				local pulse = 0.08 + math.abs(math.sin(t * 2.2)) * 0.25
-				bulb.BackgroundTransparency = pulse
-				halo.BackgroundTransparency = 0.78 + pulse * 0.15
-				task.wait(0.08)
-			end
-		end)
-	end
-	-- light wire
-	create("Frame", {
-		Position = UDim2.new(0.03, 0, 0.018, 0),
-		Size = UDim2.new(0.94, 0, 0, 1),
-		BackgroundColor3 = Color3.fromRGB(60, 50, 40),
-		BackgroundTransparency = 0.55,
-		ZIndex = 1,
-		Parent = layer,
-	})
-
-	-- dense falling snow
-	for i = 1, 48 do
-		local sz = 2 + math.random(0, 6)
-		local isBig = i % 6 == 0
-		local flake
-		if isBig then
-			flake = fxImg(
-				layer,
-				SEASONAL_IMAGES.Snowflake,
-				10 + math.random(0, 10),
-				UDim2.new(math.random() * 1.05 - 0.02, 0, -0.15 - math.random() * 0.5, 0),
-				Vector2.new(0.5, 0.5),
-				0.15 + math.random() * 0.35,
-				2,
-				Color3.fromRGB(255, 255, 255)
-			)
-		else
-			flake = softCircle(
-				layer,
-				sz,
-				UDim2.new(math.random() * 1.05 - 0.02, 0, -0.15 - math.random() * 0.5, 0),
-				Color3.fromRGB(255, 255, 255),
-				0.1 + math.random() * 0.4,
-				2
-			)
-		end
-		task.spawn(function()
-			local x = flake.Position.X.Scale
-			local speed = 0.028 + math.random() * 0.075
-			local sway = 0.25 + math.random() * 0.55
-			local phase = math.random() * 14
-			while flake.Parent do
-				local t = os.clock() + phase
-				local y = flake.Position.Y.Scale + speed * 0.016
-				if y > 1.15 then
-					y = -0.1
-					x = math.random() * 1.05 - 0.02
-				end
-				flake.Position = UDim2.new(x + math.sin(t * sway) * 0.012, 0, y, 0)
-				if isBig then
-					flake.Rotation = t * 22
-				end
-				task.wait(0.033)
-			end
-		end)
-	end
-
-	-- santa hats, trees, gifts in corners (larger, more present)
-	local decos = {
-		{ SEASONAL_IMAGES.SantaHat, 0.02, 0.04, 42, Color3.fromRGB(255, 255, 255), -8 },
-		{ SEASONAL_IMAGES.Tree, 0.09, 0.015, 38, Color3.fromRGB(180, 255, 180), 5 },
-		{ SEASONAL_IMAGES.Snowflake, 0.78, 0.025, 26, Color3.fromRGB(255, 255, 255), 0 },
-		{ SEASONAL_IMAGES.Tree, 0.88, 0.02, 36, Color3.fromRGB(160, 255, 160), -5 },
-		{ SEASONAL_IMAGES.SantaHat, 0.02, 0.86, 40, Color3.fromRGB(255, 255, 255), 8 },
-		{ SEASONAL_IMAGES.Tree, 0.9, 0.85, 40, Color3.fromRGB(170, 255, 170), -6 },
-		{ SEASONAL_IMAGES.SantaHat, 0.92, 0.08, 34, Color3.fromRGB(255, 255, 255), 12 },
-	}
-	for i, d in ipairs(decos) do
-		local el = fxImg(layer, d[1], d[4], UDim2.new(d[2], 0, d[3], 0), nil, 0.05, 3, d[5], d[6])
-		-- soft glow under decoration
-		softCircle(layer, d[4] + 10, UDim2.new(d[2] + 0.015, 0, d[3] + 0.02, 0), Color3.fromRGB(255, 200, 150), 0.9, 1)
-		task.spawn(function()
-			local phase = i * 0.9
-			while el.Parent do
-				local t = os.clock() + phase
-				el.Rotation = d[6] + math.sin(t * 0.7) * 7
-				el.ImageTransparency = 0.03 + math.sin(t * 0.45) * 0.04
-				task.wait(0.07)
-			end
-		end)
-	end
-
-	-- floating gift sparkles
-	for i = 1, 12 do
-		local sp = softCircle(
-			layer,
-			3 + math.random(0, 3),
-			UDim2.new(math.random() * 0.9 + 0.05, 0, math.random() * 0.6 + 0.2, 0),
-			lightColors[((i - 1) % #lightColors) + 1],
-			0.3,
-			2
-		)
-		task.spawn(function()
-			local x = sp.Position.X.Scale
-			local y = sp.Position.Y.Scale
-			local phase = math.random() * 6
-			while sp.Parent do
-				local t = os.clock() + phase
-				sp.Position = UDim2.new(x + math.sin(t * 0.6) * 0.02, 0, y + math.cos(t * 0.5) * 0.015, 0)
-				sp.BackgroundTransparency = 0.2 + math.abs(math.sin(t * 2.5)) * 0.5
-				task.wait(0.06)
-			end
-		end)
-	end
-
-	return layer
-end
-
 function Library:CreateWindow(opts)
 	opts = opts or {}
 	ensureIcons()
@@ -1274,20 +809,10 @@ function Library:CreateWindow(opts)
 	self.ResultIndex = 0
 	self.Flags = {}
 	self.ConfigFolder = opts.ConfigFolder or Library.ConfigFolder or "ReduceUI/configs"
-	self.Season = nil
 
 	local size = opts.Size or Vector2.new(1000, 640)
 	local lp = Players.LocalPlayer
 	local userOpts = opts.User or {}
-
-	-- Seasonal themes (opt-in by script owner)
-	if opts.Halloween == true then
-		self.Season = "Halloween"
-		Library:SetTheme("Halloween")
-	elseif opts.Christmas == true then
-		self.Season = "Christmas"
-		Library:SetTheme("Christmas")
-	end
 
 	local gui = create("ScreenGui", {
 		Name = opts.Name or "ReduceUI",
@@ -1311,12 +836,6 @@ function Library:CreateWindow(opts)
 	}, { corner(14), stroke("Stroke") })
 	self.Main = main
 	self.IsCanvas = useCanvas
-
-	if self.Season == "Halloween" then
-		spawnHalloweenEffects(main, self.Connections)
-	elseif self.Season == "Christmas" then
-		spawnChristmasEffects(main, self.Connections)
-	end
 
 	self.Scale = create("UIScale", { Parent = main })
 	self.BaseScale = 1
@@ -1359,35 +878,17 @@ function Library:CreateWindow(opts)
 		Bg = "Card",
 		Parent = sbHeader,
 	}, { corner(10), stroke("Stroke") })
-	local logoText = opts.Logo or "R"
-	if opts.Logo == nil and opts.LogoIcon == nil then
-		if self.Season == "Halloween" then
-			logoText = "R"
-		elseif self.Season == "Christmas" then
-			logoText = "R"
-		end
-	end
 	self.LogoText = newLabel({
 		Size = UDim2.fromScale(1, 1),
-		Text = logoText,
+		Text = opts.Logo or "R",
 		Font = FONT_BOLD,
 		TextSize = 18,
 		TextXAlignment = Enum.TextXAlignment.Center,
 		Parent = logoBox,
 	})
-	self.LogoIcon = newIcon(logoBox, opts.LogoIcon, 22, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5), "Text")
+	self.LogoIcon = newIcon(logoBox, opts.LogoIcon, 20, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5), "Text")
 	self.LogoIcon:SetShown(opts.LogoIcon ~= nil)
 	self.LogoText.Visible = opts.LogoIcon == nil
-	-- seasonal logo box tint
-	if self.Season == "Halloween" then
-		bind(logoBox, function()
-			logoBox.BackgroundColor3 = Theme.Accent:Lerp(Theme.Card, 0.55)
-		end)
-	elseif self.Season == "Christmas" then
-		bind(logoBox, function()
-			logoBox.BackgroundColor3 = Theme.Accent:Lerp(Theme.Card, 0.6)
-		end)
-	end
 	self.SidebarTitle = newLabel({
 		Position = UDim2.fromOffset(68, 0),
 		Size = UDim2.new(1, -88, 1, 0),
@@ -2031,17 +1532,11 @@ function WindowClass:Notify(opts)
 		padding(16, 12, 16, 0),
 		list(Enum.FillDirection.Vertical, 3),
 	})
-	local toastStroke = toast:FindFirstChildOfClass("UIStroke")
 	local sc = create("UIScale", { Scale = 0.9, Parent = toast })
 	if self.IsCanvas then
 		toast.GroupTransparency = 1
-	else
-		toast.BackgroundTransparency = 1
-		if toastStroke then
-			toastStroke.Transparency = 1
-		end
 	end
-	local titleLbl = newLabel({
+	newLabel({
 		Size = UDim2.new(1, 0, 0, 16),
 		Text = opts.Title or "Notice",
 		Font = FONT_MED,
@@ -2050,7 +1545,7 @@ function WindowClass:Notify(opts)
 		LayoutOrder = 1,
 		Parent = toast,
 	})
-	local bodyLbl = newLabel({
+	newLabel({
 		Size = UDim2.new(1, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Text = opts.Text or "",
@@ -2061,10 +1556,6 @@ function WindowClass:Notify(opts)
 		LayoutOrder = 2,
 		Parent = toast,
 	})
-	if not self.IsCanvas then
-		titleLbl.TextTransparency = 1
-		bodyLbl.TextTransparency = 1
-	end
 	create("Frame", {
 		Size = UDim2.new(1, 0, 0, 8),
 		BackgroundTransparency = 1,
@@ -2072,34 +1563,39 @@ function WindowClass:Notify(opts)
 		Parent = toast,
 	})
 	local duration = opts.Duration or 4
+	local toastStroke = toast:FindFirstChildOfClass("UIStroke")
 	if self.IsCanvas then
+		toast.GroupTransparency = 1
 		tween(toast, 0.3, { GroupTransparency = 0 })
-	else
-		tween(toast, 0.3, { BackgroundTransparency = 0 })
-		if toastStroke then
-			tween(toastStroke, 0.3, { Transparency = 0 })
-		end
-		tween(titleLbl, 0.3, { TextTransparency = 0 })
-		tween(bodyLbl, 0.3, { TextTransparency = 0 })
+	end
+	if toastStroke then
+		toastStroke.Transparency = 1
+		tween(toastStroke, 0.3, { Transparency = 0 })
 	end
 	tween(sc, 0.4, { Scale = 1 }, Enum.EasingStyle.Back)
 	task.delay(duration, function()
 		if not toast.Parent then
 			return
 		end
+		-- fade the border together with everything else, then remove it immediately
+		-- (a stroke on a UIScale'd group otherwise lingers after the body is gone)
 		if self.IsCanvas then
 			tween(toast, 0.22, { GroupTransparency = 1 })
 		else
 			tween(toast, 0.22, { BackgroundTransparency = 1 })
-			tween(titleLbl, 0.22, { TextTransparency = 1 })
-			tween(bodyLbl, 0.22, { TextTransparency = 1 })
+			for _, d in ipairs(toast:GetDescendants()) do
+				if d:IsA("TextLabel") then
+					tween(d, 0.22, { TextTransparency = 1 })
+				end
+			end
 		end
 		if toastStroke then
 			tween(toastStroke, 0.18, { Transparency = 1 })
 		end
 		tween(sc, 0.22, { Scale = 0.9 })
-		task.delay(0.24, function()
+		task.delay(0.23, function()
 			if toast.Parent then
+				toast.Visible = false
 				toast:Destroy()
 			end
 		end)
@@ -4977,5 +4473,2240 @@ function WindowClass:DeleteConfig(name)
 	end
 	return false
 end
+
+--------------------------------------------------------------------------------
+-- ReduceUI 2.1 additions
+--
+--   Elements   Section:AddList / AddCodeBlock / AddStats / AddProgress / AddStatus
+--              Section:AddActions / AddDivider / AddTextArea
+--   Window     Window:Confirm({Title, Text, ConfirmText, CancelText, Danger, OnConfirm, OnCancel})
+--   Helpers    item.Set(x) AND item:Set(x) both work on every element (dual-call)
+--              Library.SetClipboard(text), Library.Classes, Library.Version, Library.Features
+--
+--   AddList        {Title, Height=260, RowHeight=46, MaxRows=80, RightWidth=150, Empty, Icons,
+--                   HeaderButtons={{Text, Callback}}, CountFormat(shown,total), OnSelect(entry,id)}
+--                  entry = {Id, Title, Subtitle, Tag, TagColor, Right, RightColor, Icon}
+--                  :SetItems(entries) :Select(id,silent) :GetSelected() :Clear() :SetCount(text)
+--                  :SetEmptyText(text) :Count() :ScrollToTop()
+--                  Rows are diffed by Id, so refreshing keeps scroll position and never flickers.
+--   AddCodeBlock   {Title, Height=160, Wrap=true, MaxChars=12000, Placeholder, Copy=true,
+--                   WrapToggle=true, Buttons={{Text, Callback}}, OnCopy}
+--                  :Set(text) :Get() :Append(text) :Clear()
+--   AddStats       {Items={{Id, Name, Value, Note, NoteColor, Icon}}, Height=78}
+--                  :Set(id, value, note, noteColor) :SetAll({id=value | {Value, Note, NoteColor}})
+--   AddProgress    {Name, Description, Min, Max, Default, Width, Percent, Format(v,max), WarnAt, DangerAt}
+--                  :Set(value, text) :Get() :SetRange(min,max)
+--   AddStatus      {Name, Description, Id, State="ok|warn|error|off", Running, Note, NoteColor, Value}
+--                  :SetState(s) :SetRunning(bool) :SetNote(text,color) :SetValue(text)
+--   AddActions     {Buttons={{Text, Icon, Style="Default|Accent|Danger", Callback, Id}}, Height=34}
+--                  :SetEnabled(indexOrId, bool) :SetText(indexOrId, text)
+--   AddDivider     (text)
+--   AddTextArea    {Name, Description, Height=96, Default, Placeholder, Live, ReadOnly, Flag, Callback}
+--                  :Set(text, silent) :Get() :Append(text)
+--------------------------------------------------------------------------------
+
+Library.Version = "2.2.0"
+Library.Features = {
+	List = true,
+	CodeBlock = true,
+	Stats = true,
+	Progress = true,
+	Status = true,
+	Actions = true,
+	Divider = true,
+	TextArea = true,
+	Confirm = true,
+	DualCall = true,
+}
+Library.Classes = {
+	Window = WindowClass,
+	Page = PageClass,
+	Tab = TabClass,
+	Section = SectionClass,
+	Item = ItemClass,
+}
+
+do
+	local FONT_MONO = Enum.Font.RobotoMono
+
+	local function clipboard(text)
+		text = tostring(text or "")
+		local fn = nil
+		if type(setclipboard) == "function" then
+			fn = setclipboard
+		elseif type(toclipboard) == "function" then
+			fn = toclipboard
+		end
+		if not fn then
+			return false
+		end
+		return (pcall(fn, text))
+	end
+	Library.SetClipboard = clipboard
+
+	local function sanitize(s)
+		return (tostring(s):gsub("%c", function(c)
+			if c == "\n" or c == "\t" then
+				return c
+			end
+			if c == "\r" then
+				return ""
+			end
+			return "."
+		end))
+	end
+
+	-- resolve "Green" / "Muted" / Color3 into a Color3
+	local function resolveColor(key, fallback)
+		if typeof(key) == "Color3" then
+			return key
+		end
+		if type(key) == "string" then
+			if Theme.Notes[key] then
+				return Theme.Notes[key].Text
+			end
+			if Theme[key] and typeof(Theme[key]) == "Color3" then
+				return Theme[key]
+			end
+		end
+		return fallback or Theme.Muted
+	end
+
+	local function smallButton(parent, text, order)
+		local b = create("TextButton", {
+			Size = UDim2.new(0, 0, 0, 22),
+			AutomaticSize = Enum.AutomaticSize.X,
+			Bg = "Input",
+			Text = text,
+			Font = FONT_MED,
+			TextSize = 10,
+			Tc = "Muted",
+			AutoButtonColor = false,
+			LayoutOrder = order or 0,
+			Parent = parent,
+		}, { corner(6), stroke("Stroke"), padding(10, 0, 10, 0) })
+		pressable(b, 0.94)
+		b.MouseEnter:Connect(function()
+			tween(b, 0.12, { BackgroundColor3 = Theme.Active, TextColor3 = Theme.Text })
+		end)
+		b.MouseLeave:Connect(function()
+			tween(b, 0.18, { BackgroundColor3 = Theme.Input, TextColor3 = Theme.Muted })
+		end)
+		return b
+	end
+
+	local function header(parent, title, order)
+		local h = create("Frame", {
+			Size = UDim2.new(1, 0, 0, 22),
+			BackgroundTransparency = 1,
+			LayoutOrder = order or 1,
+			Parent = parent,
+		})
+		local t = newLabel({
+			Size = UDim2.new(0.5, 0, 1, 0),
+			Text = title or "",
+			Font = FONT_MED,
+			TextSize = 11,
+			Tc = "Muted",
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			Parent = h,
+		})
+		local right = create("Frame", {
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, 0, 0.5, 0),
+			Size = UDim2.new(0, 0, 1, 0),
+			AutomaticSize = Enum.AutomaticSize.X,
+			BackgroundTransparency = 1,
+			Parent = h,
+		}, { list(Enum.FillDirection.Horizontal, 6, Enum.VerticalAlignment.Center) })
+		return h, t, right
+	end
+
+	-- A transparent, auto-sized row that registers itself like any other element.
+	local function customRow(section, o)
+		local pad = o.Padding or { 10, 10, 10, 10 }
+		local item = setmetatable({
+			Section = section,
+			Page = section.Page,
+			Tab = section.Tab,
+			Name = o.Name or "",
+			Desc = o.Description or "",
+			Id = o.Id or "",
+			Extra = 0,
+			BaseH = 54,
+			Indent = 18,
+		}, ItemClass)
+		item.Row = create("Frame", {
+			Name = o.RowName or "Row",
+			Size = UDim2.new(1, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundColor3 = Color3.new(1, 1, 1),
+			BackgroundTransparency = 1,
+			LayoutOrder = #section.Items + 1,
+			Parent = section.Card,
+		}, {
+			corner(10),
+			padding(pad[1], pad[2], pad[3], pad[4]),
+			list(Enum.FillDirection.Vertical, o.Gap or 8),
+		})
+		item._layout = function() end
+		if o.NoSearch then
+			item.NoSearch = true
+			item.Matches = function()
+				return true
+			end
+		end
+		table.insert(section.Items, item)
+		table.insert(section.Page.Items, item)
+		table.insert(section.Tab.Items, item)
+		section.Tab:_updateCount()
+		return item
+	end
+
+	----------------------------------------------------------------------------
+	-- AddList
+	----------------------------------------------------------------------------
+	function SectionClass:AddList(opts)
+		opts = opts or {}
+		local item = customRow(self, {
+			Name = opts.Title or "",
+			RowName = "List",
+			NoSearch = true,
+			Padding = { 10, 10, 10, 10 },
+			Gap = 8,
+		})
+		local rowH = opts.RowHeight or 46
+		local maxRows = opts.MaxRows or 80
+		local rightReserve = opts.RightWidth or 150
+		local twoLine = rowH >= 38
+
+		local countLbl
+		if opts.Title or opts.HeaderButtons then
+			local _, titleLbl, hdrRight = header(item.Row, opts.Title, 1)
+			item.NameLabel = titleLbl
+			countLbl = newLabel({
+				Size = UDim2.new(0, 0, 1, 0),
+				AutomaticSize = Enum.AutomaticSize.X,
+				Text = "",
+				Tc = "Dim",
+				TextSize = 10,
+				LayoutOrder = 0,
+				Parent = hdrRight,
+			})
+			for i, hb in ipairs(opts.HeaderButtons or {}) do
+				local sb = smallButton(hdrRight, hb.Text or "Action", i)
+				sb.MouseButton1Click:Connect(function()
+					if hb.Callback then
+						task.spawn(hb.Callback)
+					end
+				end)
+			end
+		end
+
+		local frame = create("Frame", {
+			Size = UDim2.new(1, 0, 0, opts.Height or 260),
+			Bg = "Input",
+			ClipsDescendants = true,
+			LayoutOrder = 2,
+			Parent = item.Row,
+		}, { corner(10), stroke("Stroke") })
+		local scroll = create("ScrollingFrame", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			ScrollBarThickness = 4,
+			Sc = "StrokeLight",
+			CanvasSize = UDim2.new(),
+			AutomaticCanvasSize = Enum.AutomaticSize.Y,
+			Parent = frame,
+		}, { padding(6, 6, 6, 6), list(Enum.FillDirection.Vertical, 3) })
+		local empty = newLabel({
+			Size = UDim2.fromScale(1, 1),
+			Text = opts.Empty or "Nothing here yet",
+			Tc = "Dim",
+			TextSize = 12,
+			TextXAlignment = Enum.TextXAlignment.Center,
+			Parent = frame,
+		})
+
+		local rows, entries = {}, {}
+		local selectedId = nil
+		local shown, total = 0, 0
+
+		local function pillColors(key)
+			if typeof(key) == "Color3" then
+				return key, key:Lerp(Color3.new(0, 0, 0), 0.8)
+			end
+			local scheme = Theme.Notes[key or "Gray"] or Theme.Notes.Gray
+			return scheme.Text, scheme.Bg
+		end
+
+		-- colours are applied directly (no per-row theme binds, rows are short lived)
+		local function paintRow(r, animate)
+			local sel = (r.Id == selectedId)
+			local goalColor, goalTransparency
+			if sel then
+				goalColor = Theme.Accent:Lerp(Theme.Card, 0.84)
+				goalTransparency = 0
+			else
+				goalColor = Theme.Active
+				goalTransparency = r.Hover and 0.55 or 1
+			end
+			r.Bar.Visible = sel
+			r.Bar.BackgroundColor3 = Theme.Accent
+			if animate then
+				tween(r.Btn, 0.15, { BackgroundColor3 = goalColor, BackgroundTransparency = goalTransparency })
+			else
+				r.Btn.BackgroundColor3 = goalColor
+				r.Btn.BackgroundTransparency = goalTransparency
+			end
+			r.Title.TextColor3 = Theme.Text
+			r.Sub.TextColor3 = Theme.Muted
+			r.RightLbl.TextColor3 = resolveColor(r.RC, Theme.Muted)
+			if r.Pill then
+				local tc, bg = pillColors(r.TgC)
+				r.Pill.BackgroundColor3 = bg
+				r.PillLbl.TextColor3 = tc
+			end
+			if r.Icon then
+				r.Icon:SetColor(Theme.Muted)
+			end
+		end
+
+		local function build(id)
+			local btn = create("TextButton", {
+				Size = UDim2.new(1, 0, 0, rowH),
+				BackgroundColor3 = Theme.Active,
+				BackgroundTransparency = 1,
+				Text = "",
+				AutoButtonColor = false,
+				Parent = scroll,
+			}, { corner(8) })
+			local bar = create("Frame", {
+				AnchorPoint = Vector2.new(0, 0.5),
+				Position = UDim2.new(0, 0, 0.5, 0),
+				Size = UDim2.new(0, 3, 0.6, 0),
+				BackgroundColor3 = Theme.Accent,
+				Visible = false,
+				Parent = btn,
+			}, { corner(2) })
+			local r = { Id = id, Btn = btn, Bar = bar, Hover = false }
+			local leftX = 14
+			if opts.Icons then
+				r.Icon = newIcon(btn, "circle", 14, UDim2.new(0, 12, 0.5, 0), Vector2.new(0, 0.5))
+				leftX = 36
+			end
+			r.Title = newLabel({
+				Position = UDim2.fromOffset(leftX, twoLine and 6 or 0),
+				Size = UDim2.new(1, -(leftX + rightReserve), 0, twoLine and 18 or rowH),
+				Text = "",
+				TextColor3 = Theme.Text,
+				Font = FONT_MED,
+				TextSize = 12,
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				Parent = btn,
+			})
+			r.Sub = newLabel({
+				Position = UDim2.fromOffset(leftX, 24),
+				Size = UDim2.new(1, -(leftX + rightReserve), 0, 14),
+				Text = "",
+				TextColor3 = Theme.Muted,
+				TextSize = 10,
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				Visible = twoLine,
+				Parent = btn,
+			})
+			r.Right = create("Frame", {
+				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(1, -10, 0.5, 0),
+				Size = UDim2.new(0, 0, 0, 22),
+				AutomaticSize = Enum.AutomaticSize.X,
+				BackgroundTransparency = 1,
+				Parent = btn,
+			}, { list(Enum.FillDirection.Horizontal, 8, Enum.VerticalAlignment.Center) })
+			r.RightLbl = newLabel({
+				Size = UDim2.new(0, 0, 1, 0),
+				AutomaticSize = Enum.AutomaticSize.X,
+				Text = "",
+				TextColor3 = Theme.Muted,
+				TextSize = 11,
+				TextXAlignment = Enum.TextXAlignment.Right,
+				LayoutOrder = 2,
+				Parent = r.Right,
+			})
+			btn.MouseEnter:Connect(function()
+				r.Hover = true
+				if r.Id ~= selectedId then
+					tween(btn, 0.12, { BackgroundTransparency = 0.55 })
+				end
+			end)
+			btn.MouseLeave:Connect(function()
+				r.Hover = false
+				if r.Id ~= selectedId then
+					tween(btn, 0.18, { BackgroundTransparency = 1 })
+				end
+			end)
+			btn.MouseButton1Click:Connect(function()
+				item.Select(r.Id)
+			end)
+			paintRow(r, false)
+			return r
+		end
+
+		local function update(r, e)
+			if r.T ~= e.Title then
+				r.T = e.Title
+				r.Title.Text = tostring(e.Title or "")
+			end
+			if r.S ~= e.Subtitle then
+				r.S = e.Subtitle
+				r.Sub.Text = tostring(e.Subtitle or "")
+			end
+			if r.Tg ~= e.Tag or r.TgC ~= e.TagColor then
+				r.Tg, r.TgC = e.Tag, e.TagColor
+				if r.Pill then
+					r.Pill:Destroy()
+					r.Pill, r.PillLbl = nil, nil
+				end
+				if e.Tag and e.Tag ~= "" then
+					local tc, bg = pillColors(e.TagColor)
+					r.Pill = create("Frame", {
+						Size = UDim2.new(0, 0, 0, 18),
+						AutomaticSize = Enum.AutomaticSize.X,
+						BackgroundColor3 = bg,
+						LayoutOrder = 1,
+						Parent = r.Right,
+					}, { corner(9), padding(8, 0, 8, 0) })
+					r.PillLbl = newLabel({
+						Size = UDim2.new(0, 0, 1, 0),
+						AutomaticSize = Enum.AutomaticSize.X,
+						Text = tostring(e.Tag),
+						TextColor3 = tc,
+						TextSize = 9,
+						Font = FONT_MED,
+						Parent = r.Pill,
+					})
+				end
+			end
+			if r.R ~= e.Right or r.RC ~= e.RightColor then
+				r.R, r.RC = e.Right, e.RightColor
+				r.RightLbl.Text = tostring(e.Right or "")
+				r.RightLbl.TextColor3 = resolveColor(e.RightColor, Theme.Muted)
+			end
+			if r.Icon and r.I ~= e.Icon then
+				r.I = e.Icon
+				r.Icon:SetIcon(e.Icon or "circle")
+			end
+		end
+
+		function item.SetItems(newItems)
+			newItems = newItems or {}
+			entries = {}
+			total = #newItems
+			local seen = {}
+			local n = 0
+			for i, e in ipairs(newItems) do
+				local id = e.Id
+				if id == nil then
+					id = i
+				end
+				entries[id] = e
+				if n < maxRows then
+					n = n + 1
+					local r = rows[id]
+					if not r then
+						r = build(id)
+						rows[id] = r
+					end
+					update(r, e)
+					r.Btn.LayoutOrder = n
+					seen[id] = true
+				end
+			end
+			for id, r in pairs(rows) do
+				if not seen[id] then
+					r.Btn:Destroy()
+					rows[id] = nil
+				end
+			end
+			shown = n
+			empty.Visible = (n == 0)
+			if selectedId ~= nil and entries[selectedId] == nil then
+				selectedId = nil
+			end
+			if countLbl then
+				if opts.CountFormat then
+					countLbl.Text = tostring(opts.CountFormat(shown, total))
+				elseif total > shown then
+					countLbl.Text = shown .. " of " .. total
+				else
+					countLbl.Text = tostring(total)
+				end
+			end
+		end
+
+		function item.Select(id, silent)
+			selectedId = id
+			for _, r in pairs(rows) do
+				paintRow(r, true)
+			end
+			if not silent and id ~= nil and opts.OnSelect then
+				task.spawn(opts.OnSelect, entries[id], id)
+			end
+		end
+		function item.GetSelected()
+			return entries[selectedId], selectedId
+		end
+		function item.Clear()
+			item.SetItems({})
+		end
+		function item.SetCount(text)
+			if countLbl then
+				countLbl.Text = tostring(text or "")
+			end
+		end
+		function item.SetEmptyText(text)
+			empty.Text = tostring(text or "")
+		end
+		function item.Count()
+			return total
+		end
+		function item.ScrollToTop()
+			scroll.CanvasPosition = Vector2.new(0, 0)
+		end
+
+		bind(frame, function()
+			for _, r in pairs(rows) do
+				paintRow(r, false)
+			end
+		end)
+		return item
+	end
+
+	----------------------------------------------------------------------------
+	-- AddCodeBlock
+	----------------------------------------------------------------------------
+	function SectionClass:AddCodeBlock(opts)
+		opts = opts or {}
+		local item = customRow(self, {
+			Name = opts.Title or "",
+			RowName = "CodeBlock",
+			NoSearch = true,
+			Padding = { 10, 10, 10, 10 },
+			Gap = 8,
+		})
+		local full = ""
+		local wrap = opts.Wrap ~= false
+		local maxChars = opts.MaxChars or 12000
+
+		local _, titleLbl, hdrRight = header(item.Row, opts.Title, 1)
+		item.NameLabel = titleLbl
+		local order = 0
+		for _, b in ipairs(opts.Buttons or {}) do
+			order = order + 1
+			local sb = smallButton(hdrRight, b.Text or "Action", order)
+			sb.MouseButton1Click:Connect(function()
+				if b.Callback then
+					task.spawn(b.Callback)
+				end
+			end)
+		end
+		local wrapBtn, copyBtn
+		if opts.WrapToggle ~= false then
+			order = order + 1
+			wrapBtn = smallButton(hdrRight, "Wrap", order)
+		end
+		if opts.Copy ~= false then
+			order = order + 1
+			copyBtn = smallButton(hdrRight, "Copy", order)
+		end
+
+		local frame = create("Frame", {
+			Size = UDim2.new(1, 0, 0, opts.Height or 160),
+			Bg = "Input",
+			ClipsDescendants = true,
+			LayoutOrder = 2,
+			Parent = item.Row,
+		}, { corner(10), stroke("Stroke") })
+		local scroll = create("ScrollingFrame", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			ScrollBarThickness = 4,
+			Sc = "StrokeLight",
+			CanvasSize = UDim2.new(),
+			AutomaticCanvasSize = Enum.AutomaticSize.Y,
+			ScrollingDirection = Enum.ScrollingDirection.Y,
+			Parent = frame,
+		}, { padding(10, 8, 10, 8) })
+		local box = create("TextBox", {
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			Text = "",
+			PlaceholderText = opts.Placeholder or "",
+			Pc = "Dim",
+			Tc = "Text",
+			Font = FONT_MONO,
+			TextSize = 12,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			TextWrapped = true,
+			MultiLine = true,
+			ClearTextOnFocus = false,
+			Parent = scroll,
+		})
+		-- read-only but still selectable with the mouse
+		pcall(function()
+			box.TextEditable = false
+		end)
+
+		local function applyWrap()
+			if wrap then
+				scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+				scroll.ScrollingDirection = Enum.ScrollingDirection.Y
+				box.TextWrapped = true
+				box.Size = UDim2.new(1, 0, 0, 0)
+				box.AutomaticSize = Enum.AutomaticSize.Y
+			else
+				scroll.AutomaticCanvasSize = Enum.AutomaticSize.XY
+				scroll.ScrollingDirection = Enum.ScrollingDirection.XY
+				box.TextWrapped = false
+				box.Size = UDim2.new(0, 0, 0, 0)
+				box.AutomaticSize = Enum.AutomaticSize.XY
+			end
+			if wrapBtn then
+				wrapBtn.TextColor3 = wrap and Theme.Accent or Theme.Muted
+			end
+		end
+		applyWrap()
+		if wrapBtn then
+			wrapBtn.MouseButton1Click:Connect(function()
+				wrap = not wrap
+				applyWrap()
+			end)
+		end
+		if copyBtn then
+			copyBtn.MouseButton1Click:Connect(function()
+				local ok = clipboard(full)
+				if opts.OnCopy then
+					task.spawn(opts.OnCopy, full)
+				end
+				copyBtn.Text = ok and "Copied" or "No clipboard"
+				task.delay(1.2, function()
+					if copyBtn.Parent then
+						copyBtn.Text = "Copy"
+					end
+				end)
+			end)
+		end
+
+		local function show()
+			local s = sanitize(full)
+			if #s > maxChars then
+				s = s:sub(1, maxChars)
+					.. "\n... ["
+					.. (#full - maxChars)
+					.. " more characters - use Copy for the full text]"
+			end
+			box.Text = s
+		end
+		function item.Set(text)
+			full = tostring(text == nil and "" or text)
+			show()
+			scroll.CanvasPosition = Vector2.new(0, 0)
+		end
+		function item.Get()
+			return full
+		end
+		function item.Append(text)
+			full = full .. tostring(text or "")
+			show()
+			scroll.CanvasPosition = Vector2.new(0, 1e6)
+		end
+		function item.Clear()
+			item.Set("")
+		end
+		if opts.Text then
+			item.Set(opts.Text)
+		end
+		return item
+	end
+
+	----------------------------------------------------------------------------
+	-- AddStats
+	----------------------------------------------------------------------------
+	function SectionClass:AddStats(opts)
+		opts = opts or {}
+		local defs = opts.Items or {}
+		local n = math.max(#defs, 1)
+		local gap = 10
+		local item = customRow(self, {
+			Name = opts.Title or "Stats",
+			RowName = "Stats",
+			NoSearch = true,
+			Padding = { 10, 10, 10, 10 },
+		})
+		local holder = create("Frame", {
+			Size = UDim2.new(1, 0, 0, opts.Height or 78),
+			BackgroundTransparency = 1,
+			Parent = item.Row,
+		}, { list(Enum.FillDirection.Horizontal, gap) })
+
+		local tiles = {}
+		for i, d in ipairs(defs) do
+			local tile = create("Frame", {
+				Size = UDim2.new(1 / n, -(gap * (n - 1)) / n, 1, 0),
+				Bg = "Input",
+				LayoutOrder = i,
+				Parent = holder,
+			}, { corner(10), stroke("Stroke") })
+			newLabel({
+				Position = UDim2.fromOffset(14, 10),
+				Size = UDim2.new(1, -44, 0, 14),
+				Text = string.upper(d.Name or ""),
+				Font = FONT_MED,
+				TextSize = 10,
+				Tc = "Muted",
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				Parent = tile,
+			})
+			if d.Icon then
+				newIcon(tile, d.Icon, 14, UDim2.new(1, -12, 0, 10), Vector2.new(1, 0), "Dim")
+			end
+			local value = newLabel({
+				Position = UDim2.fromOffset(14, 26),
+				Size = UDim2.new(1, -28, 0, 28),
+				Text = tostring(d.Value == nil and "-" or d.Value),
+				Font = FONT_BOLD,
+				TextSize = 22,
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				Parent = tile,
+			})
+			local note = newLabel({
+				Position = UDim2.fromOffset(14, 56),
+				Size = UDim2.new(1, -28, 0, 14),
+				Text = d.Note or "",
+				TextColor3 = resolveColor(d.NoteColor, Theme.Muted),
+				TextSize = 10,
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				Parent = tile,
+			})
+			local t = { Id = d.Id or i, Value = value, Note = note, V = value.Text }
+			tiles[t.Id] = t
+			tiles[i] = t
+		end
+
+		function item.Set(id, v, noteText, noteColor)
+			local t = tiles[id]
+			if not t then
+				return
+			end
+			local sv = tostring(v == nil and "-" or v)
+			if t.V ~= sv then
+				t.V = sv
+				t.Value.Text = sv
+				t.Value.TextColor3 = Theme.Accent
+				tween(t.Value, 0.7, { TextColor3 = Theme.Text })
+			end
+			if noteText ~= nil then
+				t.Note.Text = tostring(noteText)
+				t.Note.TextColor3 = resolveColor(noteColor, Theme.Muted)
+			end
+		end
+		function item.SetAll(map)
+			for id, v in pairs(map or {}) do
+				if type(v) == "table" then
+					item.Set(id, v.Value, v.Note, v.NoteColor)
+				else
+					item.Set(id, v)
+				end
+			end
+		end
+		return item
+	end
+
+	----------------------------------------------------------------------------
+	-- AddProgress
+	----------------------------------------------------------------------------
+	function SectionClass:AddProgress(opts)
+		opts = opts or {}
+		local item = self:_makeRow(opts)
+		local min, max = opts.Min or 0, opts.Max or 100
+		local value = opts.Default or opts.Value or min
+		local label = ""
+
+		local holder = create("Frame", {
+			Size = UDim2.fromOffset(opts.Width or 280, 30),
+			BackgroundTransparency = 1,
+			Parent = item.Controls,
+		})
+		local track = create("Frame", {
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 0, 0.5, 0),
+			Size = UDim2.new(1, -80, 0, 6),
+			Bg = "Input",
+			Parent = holder,
+		}, { corner(3), stroke("Stroke") })
+		local fill = create("Frame", {
+			Size = UDim2.fromScale(0, 1),
+			BackgroundColor3 = Theme.Accent,
+			Parent = track,
+		}, { corner(3) })
+		local text = newLabel({
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, 0, 0.5, 0),
+			Size = UDim2.fromOffset(72, 20),
+			Text = "",
+			Tc = "Muted",
+			TextSize = 11,
+			TextXAlignment = Enum.TextXAlignment.Right,
+			Parent = holder,
+		})
+
+		local function rel()
+			if max == min then
+				return 0
+			end
+			return math.clamp((value - min) / (max - min), 0, 1)
+		end
+		local function color()
+			local r = rel()
+			if r >= (opts.DangerAt or 0.95) then
+				return Theme.Notes.Red.Text
+			end
+			if r >= (opts.WarnAt or 0.8) then
+				return Theme.Notes.Yellow.Text
+			end
+			return Theme.Accent
+		end
+		local function format()
+			if label ~= "" then
+				return label
+			end
+			if opts.Format then
+				return tostring(opts.Format(value, max))
+			end
+			if opts.Percent then
+				return string.format("%d%%", math.floor(rel() * 100 + 0.5))
+			end
+			return tostring(value) .. " / " .. tostring(max)
+		end
+		local function render(animate)
+			if animate then
+				tween(fill, 0.3, { Size = UDim2.fromScale(rel(), 1), BackgroundColor3 = color() })
+			else
+				fill.Size = UDim2.fromScale(rel(), 1)
+				fill.BackgroundColor3 = color()
+			end
+			text.Text = format()
+		end
+		bind(fill, function()
+			fill.BackgroundColor3 = color()
+		end)
+		render(false)
+
+		function item.Set(v, txt)
+			value = v
+			label = txt or ""
+			render(true)
+		end
+		function item.Get()
+			return value
+		end
+		function item.SetRange(a, b)
+			min, max = a, b
+			render(true)
+		end
+		return item
+	end
+
+	----------------------------------------------------------------------------
+	-- AddStatus
+	----------------------------------------------------------------------------
+	local function stateColor(s)
+		if s == "ok" then
+			return Theme.Accent
+		elseif s == "warn" then
+			return Theme.Notes.Yellow.Text
+		elseif s == "error" then
+			return Theme.Notes.Red.Text
+		end
+		return Theme.Dot
+	end
+
+	function SectionClass:AddStatus(opts)
+		opts = opts or {}
+		local o = {}
+		for k, v in pairs(opts) do
+			o[k] = v
+		end
+		o.Indent = 46
+		local item = self:_makeRow(o)
+		item.State = opts.State or (opts.Running and "ok" or "off")
+
+		local dot = create("Frame", {
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 20, 0.5, 0),
+			Size = UDim2.fromOffset(8, 8),
+			Parent = item.Top,
+		}, { corner(4) })
+		bind(dot, function()
+			dot.BackgroundColor3 = stateColor(item.State)
+		end)
+
+		local note
+		local function setNote(text, color)
+			if note then
+				note:Destroy()
+				note = nil
+			end
+			if text and text ~= "" then
+				note = makeNote(item.Controls, tostring(text), color)
+			end
+		end
+		setNote(opts.Note, opts.NoteColor)
+		local valueLbl = newLabel({
+			Size = UDim2.new(0, 0, 1, 0),
+			AutomaticSize = Enum.AutomaticSize.X,
+			Text = opts.Value ~= nil and tostring(opts.Value) or "",
+			Tc = "Muted",
+			TextSize = 12,
+			TextXAlignment = Enum.TextXAlignment.Right,
+			LayoutOrder = 2,
+			Parent = item.Controls,
+		})
+
+		function item.SetState(s)
+			item.State = s
+			tween(dot, 0.25, { BackgroundColor3 = stateColor(s) })
+		end
+		function item.SetRunning(b)
+			item.SetState(b and "ok" or "off")
+		end
+		item.SetNote = setNote
+		function item.SetValue(t)
+			valueLbl.Text = tostring(t == nil and "" or t)
+		end
+		return item
+	end
+
+	----------------------------------------------------------------------------
+	-- AddActions (a compact row of buttons)
+	----------------------------------------------------------------------------
+	function SectionClass:AddActions(opts)
+		opts = opts or {}
+		local item = customRow(self, {
+			Name = opts.Title or "Actions",
+			RowName = "Actions",
+			NoSearch = true,
+			Padding = { 10, 8, 10, 8 },
+			Gap = 0,
+		})
+		local defs = opts.Buttons or {}
+		local n = math.max(#defs, 1)
+		local gap = 8
+		local holder = create("Frame", {
+			Size = UDim2.new(1, 0, 0, opts.Height or 34),
+			BackgroundTransparency = 1,
+			Parent = item.Row,
+		}, { list(Enum.FillDirection.Horizontal, gap) })
+
+		local recs = {}
+		for i, d in ipairs(defs) do
+			local style = d.Style or "Default"
+			local b = create("TextButton", {
+				Size = UDim2.new(1 / n, -(gap * (n - 1)) / n, 1, 0),
+				Text = "",
+				AutoButtonColor = false,
+				LayoutOrder = i,
+				Parent = holder,
+			}, { corner(8), stroke("Stroke") })
+			local st = b:FindFirstChildOfClass("UIStroke")
+			local inner = create("Frame", {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.new(0, 0, 1, 0),
+				AutomaticSize = Enum.AutomaticSize.X,
+				BackgroundTransparency = 1,
+				Parent = b,
+			}, { list(Enum.FillDirection.Horizontal, 6, Enum.VerticalAlignment.Center) })
+			local icon
+			if d.Icon then
+				icon = newIcon(inner, d.Icon, 14)
+				icon.Holder.LayoutOrder = 1
+			end
+			local lbl = newLabel({
+				Size = UDim2.new(0, 0, 1, 0),
+				AutomaticSize = Enum.AutomaticSize.X,
+				Text = d.Text or "",
+				Font = FONT_MED,
+				TextSize = 12,
+				LayoutOrder = 2,
+				Parent = inner,
+			})
+			pressable(b, 0.96)
+			local rec = { Btn = b, Label = lbl, Def = d, Enabled = true, Hover = false }
+
+			local function paint(animate)
+				local bg, tc, sc
+				if style == "Accent" then
+					bg, tc, sc = Theme.Accent, Color3.new(1, 1, 1), Theme.Accent
+				elseif style == "Danger" then
+					bg, tc = Theme.Notes.Red.Bg, Theme.Notes.Red.Text
+					sc = Theme.Notes.Red.Text:Lerp(Theme.Notes.Red.Bg, 0.6)
+				else
+					bg, tc, sc = Theme.Input, Theme.Text, Theme.Stroke
+				end
+				if rec.Hover and rec.Enabled then
+					if style == "Default" then
+						bg = Theme.Active
+					else
+						bg = bg:Lerp(Color3.new(1, 1, 1), 0.12)
+					end
+				end
+				local transp = rec.Enabled and 0 or 0.55
+				if animate then
+					tween(b, 0.15, { BackgroundColor3 = bg, BackgroundTransparency = transp })
+					tween(st, 0.15, { Color = sc })
+				else
+					b.BackgroundColor3 = bg
+					b.BackgroundTransparency = transp
+					st.Color = sc
+				end
+				lbl.TextColor3 = tc
+				lbl.TextTransparency = rec.Enabled and 0 or 0.45
+				if icon then
+					icon:SetColor(tc)
+				end
+			end
+			rec.Paint = paint
+			bind(b, function()
+				paint(false)
+			end)
+			b.MouseEnter:Connect(function()
+				rec.Hover = true
+				paint(true)
+			end)
+			b.MouseLeave:Connect(function()
+				rec.Hover = false
+				paint(true)
+			end)
+			b.MouseButton1Click:Connect(function()
+				if rec.Enabled and d.Callback then
+					task.spawn(d.Callback)
+				end
+			end)
+			recs[i] = rec
+		end
+
+		local function find(key)
+			if type(key) == "number" then
+				return recs[key]
+			end
+			for _, r in ipairs(recs) do
+				if r.Def.Id == key or r.Def.Text == key then
+					return r
+				end
+			end
+			return nil
+		end
+		function item.SetEnabled(key, on)
+			local r = find(key)
+			if r then
+				r.Enabled = (on ~= false)
+				r.Paint(true)
+			end
+		end
+		function item.SetAllEnabled(on)
+			for _, r in ipairs(recs) do
+				r.Enabled = (on ~= false)
+				r.Paint(true)
+			end
+		end
+		function item.SetText(key, text)
+			local r = find(key)
+			if r then
+				r.Label.Text = tostring(text)
+			end
+		end
+		function item.GetButton(key)
+			local r = find(key)
+			return r and r.Btn or nil
+		end
+		return item
+	end
+
+	----------------------------------------------------------------------------
+	-- AddDivider
+	----------------------------------------------------------------------------
+	function SectionClass:AddDivider(text)
+		local item = customRow(self, {
+			Name = text or "",
+			RowName = "Divider",
+			NoSearch = true,
+			Padding = { 18, 6, 18, 6 },
+		})
+		local holder = create("Frame", {
+			Size = UDim2.new(1, 0, 0, 16),
+			BackgroundTransparency = 1,
+			Parent = item.Row,
+		})
+		create("Frame", {
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 0, 0.5, 0),
+			Size = UDim2.new(1, 0, 0, 1),
+			Bg = "Stroke",
+			Parent = holder,
+		})
+		if text and text ~= "" then
+			local tag = create("Frame", {
+				Size = UDim2.new(0, 0, 1, 0),
+				AutomaticSize = Enum.AutomaticSize.X,
+				Bg = "Card",
+				ZIndex = 2,
+				Parent = holder,
+			}, { padding(0, 0, 8, 0) })
+			item.NameLabel = newLabel({
+				Size = UDim2.new(0, 0, 1, 0),
+				AutomaticSize = Enum.AutomaticSize.X,
+				Text = string.upper(text),
+				Font = FONT_MED,
+				TextSize = 9,
+				Tc = "Dim",
+				ZIndex = 3,
+				Parent = tag,
+			})
+		end
+		return item
+	end
+
+	----------------------------------------------------------------------------
+	-- AddTextArea
+	----------------------------------------------------------------------------
+	function SectionClass:AddTextArea(opts)
+		opts = opts or {}
+		local item = customRow(self, {
+			Name = opts.Name,
+			Description = opts.Description,
+			Id = opts.Id,
+			RowName = opts.Name or "TextArea",
+			Padding = { 18, 14, 18, 14 },
+			Gap = 8,
+		})
+		item.NameLabel = newLabel({
+			Size = UDim2.new(1, 0, 0, 18),
+			Text = item.Name,
+			Font = FONT_MED,
+			TextSize = 13,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			LayoutOrder = 1,
+			Parent = item.Row,
+		})
+		item.DescLabel = newLabel({
+			Size = UDim2.new(1, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			Text = item.Desc,
+			Tc = "Muted",
+			TextSize = 10,
+			TextWrapped = true,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			Visible = item.Desc ~= "",
+			LayoutOrder = 2,
+			Parent = item.Row,
+		})
+		item._layout = function()
+			item.NameLabel.Text = item.Name
+			item.DescLabel.Text = item.Desc
+			item.DescLabel.Visible = item.Desc ~= ""
+		end
+
+		local height = opts.Height or 96
+		local frame = create("Frame", {
+			Size = UDim2.new(1, 0, 0, height),
+			Bg = "Input",
+			ClipsDescendants = true,
+			LayoutOrder = 3,
+			Parent = item.Row,
+		}, { corner(10), stroke("Stroke") })
+		local fstroke = frame:FindFirstChildOfClass("UIStroke")
+		local scroll = create("ScrollingFrame", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			ScrollBarThickness = 4,
+			Sc = "StrokeLight",
+			CanvasSize = UDim2.new(),
+			AutomaticCanvasSize = Enum.AutomaticSize.Y,
+			ScrollingDirection = Enum.ScrollingDirection.Y,
+			Parent = frame,
+		}, { padding(10, 8, 10, 8) })
+		local box = create("TextBox", {
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, math.max(height - 16, 20)),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			Text = opts.Default or "",
+			PlaceholderText = opts.Placeholder or "",
+			Pc = "Dim",
+			Tc = "Text",
+			Font = FONT_MONO,
+			TextSize = 12,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			TextWrapped = true,
+			MultiLine = true,
+			ClearTextOnFocus = false,
+			Parent = scroll,
+		})
+		if opts.ReadOnly then
+			pcall(function()
+				box.TextEditable = false
+			end)
+		end
+		box.Focused:Connect(function()
+			tween(fstroke, 0.2, { Color = Theme.Accent })
+		end)
+		box.FocusLost:Connect(function()
+			tween(fstroke, 0.2, { Color = Theme.Stroke })
+			if opts.Callback and not opts.Live then
+				task.spawn(opts.Callback, box.Text)
+			end
+		end)
+		if opts.Live then
+			box:GetPropertyChangedSignal("Text"):Connect(function()
+				if opts.Callback then
+					task.spawn(opts.Callback, box.Text)
+				end
+			end)
+		end
+
+		function item.Set(t, silent)
+			box.Text = tostring(t == nil and "" or t)
+			if not silent and opts.Callback then
+				task.spawn(opts.Callback, box.Text)
+			end
+		end
+		function item.Get()
+			return box.Text
+		end
+		function item.Append(line)
+			local cur = box.Text
+			if cur ~= "" and cur:sub(-1) ~= "\n" then
+				cur = cur .. "\n"
+			end
+			item.Set(cur .. tostring(line or ""), false)
+		end
+		if opts.Flag then
+			item.Flag = opts.Flag
+			item.ConfigType = "value"
+			self.Window:_registerFlag(item)
+		end
+		return item
+	end
+
+	----------------------------------------------------------------------------
+	-- Window:Confirm
+	----------------------------------------------------------------------------
+	function WindowClass:Confirm(opts)
+		opts = opts or {}
+		if self.ConfirmClose then
+			self.ConfirmClose(false, true)
+		end
+		local base = self.BaseScale or 1
+		local overlay = create("TextButton", {
+			Name = "ConfirmOverlay",
+			Size = UDim2.fromScale(1, 1),
+			BackgroundColor3 = Color3.new(0, 0, 0),
+			BackgroundTransparency = 1,
+			Text = "",
+			AutoButtonColor = false,
+			ZIndex = 300,
+			Parent = self.Gui,
+		})
+		local card = create("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromOffset(400, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			Bg = "Card",
+			Parent = overlay,
+		}, {
+			corner(14),
+			stroke("StrokeLight"),
+			padding(22, 20, 22, 18),
+			list(Enum.FillDirection.Vertical, 10),
+		})
+		local sc = create("UIScale", { Scale = 0.92 * base, Parent = card })
+
+		local top = create("Frame", {
+			Size = UDim2.new(1, 0, 0, 28),
+			BackgroundTransparency = 1,
+			LayoutOrder = 1,
+			Parent = card,
+		}, { list(Enum.FillDirection.Horizontal, 10, Enum.VerticalAlignment.Center) })
+		local iconBox = create("Frame", {
+			Size = UDim2.fromOffset(28, 28),
+			BackgroundColor3 = opts.Danger and Theme.Notes.Red.Bg or Theme.Active,
+			LayoutOrder = 1,
+			Parent = top,
+		}, { corner(8) })
+		local ic = newIcon(
+			iconBox,
+			opts.Icon or (opts.Danger and { "triangle-alert", "alert-triangle", "!" } or { "circle-help", "help-circle", "?" }),
+			15,
+			UDim2.fromScale(0.5, 0.5),
+			Vector2.new(0.5, 0.5)
+		)
+		ic:SetColor(opts.Danger and Theme.Notes.Red.Text or Theme.Accent)
+		newLabel({
+			Size = UDim2.new(1, -40, 1, 0),
+			Text = opts.Title or "Are you sure?",
+			Font = FONT_BOLD,
+			TextSize = 15,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			LayoutOrder = 2,
+			Parent = top,
+		})
+		newLabel({
+			Size = UDim2.new(1, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			Text = opts.Text or "",
+			Tc = "Muted",
+			TextSize = 12,
+			TextWrapped = true,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			LayoutOrder = 2,
+			Parent = card,
+		})
+		local btnRow = create("Frame", {
+			Size = UDim2.new(1, 0, 0, 36),
+			BackgroundTransparency = 1,
+			LayoutOrder = 3,
+			Parent = card,
+		}, {
+			create("UIListLayout", {
+				FillDirection = Enum.FillDirection.Horizontal,
+				HorizontalAlignment = Enum.HorizontalAlignment.Right,
+				VerticalAlignment = Enum.VerticalAlignment.Center,
+				Padding = UDim.new(0, 8),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}),
+		})
+
+		local closed = false
+		local conn
+		local function close(result, instant)
+			if closed then
+				return
+			end
+			closed = true
+			if conn then
+				conn:Disconnect()
+			end
+			self.ConfirmClose = nil
+			if instant then
+				overlay:Destroy()
+			else
+				tween(overlay, 0.15, { BackgroundTransparency = 1 })
+				tween(sc, 0.15, { Scale = 0.94 * base })
+				task.delay(0.16, function()
+					overlay:Destroy()
+				end)
+			end
+			if result then
+				if opts.OnConfirm then
+					task.spawn(opts.OnConfirm)
+				end
+			else
+				if opts.OnCancel then
+					task.spawn(opts.OnCancel)
+				end
+			end
+		end
+		self.ConfirmClose = close
+
+		local function dialogButton(text, order, primary)
+			local danger = primary and opts.Danger
+			local b = create("TextButton", {
+				Size = UDim2.fromOffset(104, 34),
+				BackgroundColor3 = Theme.Active,
+				Text = text,
+				Font = FONT_MED,
+				TextSize = 12,
+				TextColor3 = Theme.Text,
+				AutoButtonColor = false,
+				LayoutOrder = order,
+				Parent = btnRow,
+			}, { corner(9), stroke("Stroke") })
+			local function paint(hover)
+				local bg, tc
+				if primary then
+					if danger then
+						bg, tc = Theme.Notes.Red.Text, Color3.new(1, 1, 1)
+					else
+						bg, tc = Theme.Accent, Color3.new(1, 1, 1)
+					end
+					if hover then
+						bg = bg:Lerp(Color3.new(1, 1, 1), 0.12)
+					end
+				else
+					bg = hover and Theme.StrokeLight or Theme.Active
+					tc = Theme.Text
+				end
+				tween(b, 0.12, { BackgroundColor3 = bg })
+				b.TextColor3 = tc
+			end
+			paint(false)
+			b.MouseEnter:Connect(function()
+				paint(true)
+			end)
+			b.MouseLeave:Connect(function()
+				paint(false)
+			end)
+			pressable(b, 0.95)
+			return b
+		end
+		local cancelBtn = dialogButton(opts.CancelText or "Cancel", 1, false)
+		local okBtn = dialogButton(opts.ConfirmText or "Confirm", 2, true)
+		cancelBtn.MouseButton1Click:Connect(function()
+			close(false)
+		end)
+		okBtn.MouseButton1Click:Connect(function()
+			close(true)
+		end)
+		overlay.MouseButton1Click:Connect(function()
+			close(false)
+		end)
+		conn = UserInputService.InputBegan:Connect(function(input)
+			if input.KeyCode == Enum.KeyCode.Escape then
+				close(false)
+			elseif input.KeyCode == Enum.KeyCode.Return or input.KeyCode == Enum.KeyCode.KeypadEnter then
+				close(true)
+			end
+		end)
+		table.insert(self.Connections, conn)
+
+		tween(overlay, 0.2, { BackgroundTransparency = 0.45 })
+		tween(sc, 0.35, { Scale = base }, Enum.EasingStyle.Back)
+		return close
+	end
+
+	----------------------------------------------------------------------------
+	-- Search: the new "content" elements (lists, code blocks...) are not searchable
+	----------------------------------------------------------------------------
+	local origSearch = WindowClass._search
+	function WindowClass:_search(q)
+		local results = origSearch(self, q)
+		local out = {}
+		for _, r in ipairs(results) do
+			if not (r.Item and r.Item.NoSearch) then
+				out[#out + 1] = r
+			end
+		end
+		return out
+	end
+
+	----------------------------------------------------------------------------
+	-- Dual-call: every function an element exposes works as item.Set(x) and item:Set(x)
+	----------------------------------------------------------------------------
+	local function dualWrap(item)
+		if type(item) ~= "table" then
+			return item
+		end
+		local names = {}
+		for k, v in pairs(item) do
+			if type(k) == "string" and type(v) == "function" then
+				local c = k:sub(1, 1)
+				if c ~= "_" and k ~= "Matches" and k:sub(1, 2) ~= "On" then
+					names[#names + 1] = k
+				end
+			end
+		end
+		for _, k in ipairs(names) do
+			local fn = item[k]
+			item[k] = function(a, ...)
+				if a == item then
+					return fn(...)
+				end
+				return fn(a, ...)
+			end
+		end
+		return item
+	end
+
+	local addNames = {}
+	for name, fn in pairs(SectionClass) do
+		if type(name) == "string" and name:sub(1, 3) == "Add" and type(fn) == "function" then
+			addNames[#addNames + 1] = name
+		end
+	end
+	for _, name in ipairs(addNames) do
+		local orig = SectionClass[name]
+		SectionClass[name] = function(self, ...)
+			return dualWrap(orig(self, ...))
+		end
+	end
+end
+
+
+-- ============================================================================
+-- Seasonal modes (2.2): Halloween + Christmas. Opt-in by the script owner only.
+--
+--   Library:CreateWindow({ ..., Halloween = true })
+--   Library:CreateWindow({ ..., Christmas = true })
+--   Library:CreateWindow({ ..., Christmas = { Intensity = 1.5, Screen = true } })
+--   Library:CreateWindow({ ..., Season = "Halloween" })
+--   Window:SetSeason("Christmas" | "Halloween" | nil [, cfg])   -- switch at runtime
+--   Window:GetSeason()
+--
+-- cfg (all optional):  Theme (bool, default true)   apply the season colour preset
+--                      Effects (bool, default true) falling snow / bats / ghosts / glow
+--                      Decor (bool, default true)   hats, garland, cobwebs, slime...
+--                      Intensity (number, 1)        particle count multiplier
+--                      Screen (bool, false)         particles fall over the whole screen
+--
+-- Every glyph is editable and may be an emoji/text OR an "rbxassetid://" image:
+--   Library.Seasons.Christmas.Glyphs.Tree = "rbxassetid://123"
+-- ============================================================================
+do
+	local TAU = math.pi * 2
+	local Seasons = {}
+	Library.Seasons = Seasons
+	Library.Features.Seasons = true
+
+	local function C(r, g, b)
+		return Color3.fromRGB(r, g, b)
+	end
+
+	Library.Presets.Halloween = {
+		Accent = C(255, 117, 24),
+		Background = C(16, 11, 22),
+		Sidebar = C(19, 13, 27),
+		Card = C(25, 17, 34),
+		Input = C(13, 9, 19),
+		Active = C(48, 28, 38),
+		Stroke = C(54, 35, 66),
+		StrokeLight = C(120, 66, 40),
+		Text = C(246, 234, 222),
+		Muted = C(174, 154, 164),
+		Dim = C(118, 100, 128),
+		Dot = C(120, 90, 110),
+		Notes = {
+			Green = { Text = C(132, 204, 22), Bg = C(30, 44, 14) },
+			Yellow = { Text = C(251, 146, 60), Bg = C(62, 34, 14) },
+			Red = { Text = C(244, 63, 94), Bg = C(64, 18, 34) },
+			Gray = { Text = C(170, 150, 175), Bg = C(38, 28, 46) },
+			Blue = { Text = C(192, 132, 252), Bg = C(42, 24, 66) },
+		},
+	}
+	Library.Presets.Christmas = {
+		Accent = C(239, 68, 68),
+		Background = C(13, 22, 19),
+		Sidebar = C(15, 26, 22),
+		Card = C(19, 31, 27),
+		Input = C(11, 19, 16),
+		Active = C(52, 30, 32),
+		Stroke = C(34, 54, 46),
+		StrokeLight = C(110, 56, 56),
+		Text = C(244, 248, 245),
+		Muted = C(160, 180, 170),
+		Dim = C(100, 125, 112),
+		Dot = C(95, 125, 110),
+		Notes = {
+			Green = { Text = C(74, 222, 128), Bg = C(16, 54, 34) },
+			Yellow = { Text = C(250, 204, 21), Bg = C(60, 50, 14) },
+			Red = { Text = C(248, 113, 113), Bg = C(64, 22, 24) },
+			Gray = { Text = C(170, 185, 178), Bg = C(32, 44, 38) },
+			Blue = { Text = C(125, 211, 252), Bg = C(18, 44, 62) },
+		},
+	}
+
+	Seasons.Halloween = {
+		Preset = "Halloween",
+		Emoji = "🎃",
+		Glyphs = { Bat = "🦇", Ghost = "👻", Ember = "•", Web = "🕸️", Pumpkin = "🎃", Spider = "🕷️" },
+	}
+	Seasons.Christmas = {
+		Preset = "Christmas",
+		Emoji = "🎄",
+		Glyphs = { Flake = { "❄", "•", "✦", "❅" }, Tree = "🎄", Gift = "🎁", Snowman = "⛄" },
+	}
+
+	local function isAsset(g)
+		return type(g) == "string" and (g:find("^rbxassetid://") or g:find("^rbxasset://") or g:find("^http")) ~= nil
+	end
+
+	-- emoji/text glyph or an image, same interface either way
+	local function glyph(parent, g, size, props)
+		local obj
+		if isAsset(g) then
+			obj = create("ImageLabel", {
+				BackgroundTransparency = 1,
+				Image = g,
+				Size = UDim2.fromOffset(size, size),
+				Parent = parent,
+			})
+		else
+			obj = create("TextLabel", {
+				BackgroundTransparency = 1,
+				Text = tostring(g),
+				TextSize = size,
+				Font = Enum.Font.BuilderSans,
+				TextColor3 = Color3.new(1, 1, 1),
+				Size = UDim2.fromOffset(size + 8, size + 8),
+				Parent = parent,
+			})
+		end
+		for k, v in pairs(props or {}) do
+			obj[k] = v
+		end
+		return obj
+	end
+	local function setAlpha(obj, a)
+		if obj.ClassName == "ImageLabel" then
+			obj.ImageTransparency = a
+		else
+			obj.TextTransparency = a
+		end
+	end
+	local function rand(a, b)
+		return a + math.random() * (b - a)
+	end
+	local function pick(t)
+		if type(t) == "table" then
+			return t[math.random(1, #t)]
+		end
+		return t
+	end
+	local function px(win)
+		return win.SizePx or Vector2.new(1000, 640)
+	end
+
+	local function santaHat(parent, w, pos, rot, z)
+		local h = w * 0.82
+		local root = create("Frame", {
+			Name = "SantaHat",
+			BackgroundTransparency = 1,
+			Size = UDim2.fromOffset(w, h),
+			Position = pos,
+			Rotation = rot or 0,
+			ZIndex = z or 6,
+			Parent = parent,
+		})
+		create("Frame", {
+			Position = UDim2.fromOffset(w * 0.1, h * 0.2),
+			Size = UDim2.fromOffset(w * 0.8, h * 0.62),
+			BackgroundColor3 = C(220, 38, 38),
+			ZIndex = z or 6,
+			Parent = root,
+		}, { create("UICorner", { CornerRadius = UDim.new(0.5, 0) }) })
+		create("Frame", {
+			Position = UDim2.fromOffset(0, h * 0.68),
+			Size = UDim2.fromOffset(w, h * 0.3),
+			BackgroundColor3 = C(250, 250, 252),
+			ZIndex = (z or 6) + 1,
+			Parent = root,
+		}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+		create("Frame", {
+			Position = UDim2.fromOffset(w * 0.64, 0),
+			Size = UDim2.fromOffset(h * 0.34, h * 0.34),
+			BackgroundColor3 = C(250, 250, 252),
+			ZIndex = (z or 6) + 1,
+			Parent = root,
+		}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+		return root
+	end
+
+	local function newLayer(parent, name, z, clip)
+		return create("Frame", {
+			Name = name,
+			BackgroundTransparency = 1,
+			Size = UDim2.fromScale(1, 1),
+			ClipsDescendants = clip == true,
+			ZIndex = z,
+			Active = false,
+			Parent = parent,
+		})
+	end
+
+	-- ---- per-window machinery ------------------------------------------------
+	local function fxClear(win)
+		if win.FXConn then
+			win.FXConn:Disconnect()
+			local idx = table.find(win.Connections, win.FXConn)
+			if idx then
+				table.remove(win.Connections, idx)
+			end
+			win.FXConn = nil
+		end
+		for _, o in ipairs(win.FXObjects or {}) do
+			pcall(function()
+				o:Destroy()
+			end)
+		end
+		win.FXObjects = {}
+		win.FXUpdaters = {}
+		local st = win.Main and win.Main:FindFirstChildOfClass("UIStroke")
+		if st then
+			st.Thickness = 1
+		end
+	end
+
+	local function track(win, inst)
+		win.FXObjects[#win.FXObjects + 1] = inst
+		return inst
+	end
+
+	local function startLoop(win)
+		local t = 0
+		win.FXConn = RunService.Heartbeat:Connect(function(dt)
+			if not win.Gui or not win.Gui.Parent then
+				return
+			end
+			dt = math.min(dt or 0.016, 0.1)
+			local vis = win.Visible
+			if win.ParticleLayer and win.ParticleLayer.Visible ~= vis then
+				win.ParticleLayer.Visible = vis
+			end
+			if not vis then
+				return
+			end
+			t = t + dt
+			for _, fn in ipairs(win.FXUpdaters) do
+				fn(dt, t)
+			end
+		end)
+		table.insert(win.Connections, win.FXConn)
+	end
+
+	local function addUpdater(win, fn)
+		win.FXUpdaters[#win.FXUpdaters + 1] = fn
+	end
+
+	-- ---- Christmas -----------------------------------------------------------
+	local function sectionChristmas(win, sec, g)
+		if not sec.Card or sec.SeasonDecor then
+			return
+		end
+		local holder = create("Frame", {
+			Name = "SeasonDecor",
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 0),
+			LayoutOrder = -100,
+			ZIndex = 4,
+			Parent = sec.Card,
+		})
+		sec.SeasonDecor = holder
+		-- snow cap
+		create("Frame", {
+			Position = UDim2.new(0, 22, 0, -9),
+			Size = UDim2.new(1, -90, 0, 6),
+			BackgroundColor3 = C(244, 248, 255),
+			ZIndex = 4,
+			Parent = holder,
+		}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+		for i = 1, 4 do
+			local d = math.random(8, 14)
+			create("Frame", {
+				Position = UDim2.new(rand(0.05, 0.7), 0, 0, -9 - d * 0.35),
+				Size = UDim2.fromOffset(d * 2, d),
+				BackgroundColor3 = C(244, 248, 255),
+				ZIndex = 4,
+				Parent = holder,
+			}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+		end
+		santaHat(holder, 24, UDim2.new(1, -40, 0, -16), 16, 5)
+	end
+
+	local function buildChristmas(win, cfg, S, layers)
+		local g = S.Glyphs
+		local size = px(win)
+		local decor, fx = layers.decor, layers.fx
+
+		if cfg.Decor then
+			pcall(function()
+				-- santa hats on logo and avatar
+				local logoBox = win.LogoText and win.LogoText.Parent
+				if logoBox then
+					track(win, santaHat(logoBox, 28, UDim2.fromOffset(-7, -14), -18, 8))
+				end
+				local avatar = win.AvatarImage and win.AvatarImage.Parent
+				if avatar and avatar.Parent then
+					track(win, santaHat(avatar.Parent, 30, UDim2.fromOffset(12, 5), -16, 8))
+				end
+				local header = logoBox and logoBox.Parent
+				if header then
+					track(win, glyph(header, g.Tree, 22, { Position = UDim2.new(1, -44, 0, 18), ZIndex = 8 }))
+				end
+				local footer = avatar and avatar.Parent
+				if footer then
+					track(win, glyph(footer, g.Gift, 20, { Position = UDim2.new(1, -44, 0, 20), ZIndex = 8 }))
+				end
+				track(win, glyph(decor, g.Snowman, 30, {
+					AnchorPoint = Vector2.new(1, 1),
+					Position = UDim2.new(1, -14, 1, -2),
+					ZIndex = 56,
+				}))
+				-- snow drift along the bottom edge
+				local x = -20
+				while x < size.X do
+					local w = math.random(50, 110)
+					track(win, create("Frame", {
+						Position = UDim2.new(0, x, 1, -rand(4, 9)),
+						Size = UDim2.fromOffset(w, math.random(14, 22)),
+						BackgroundColor3 = C(244, 248, 255),
+						ZIndex = 54,
+						Parent = decor,
+					}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) }))
+					x = x + w * 0.7
+				end
+				-- light garland along the top edge
+				local colors = { C(239, 68, 68), C(250, 204, 21), C(74, 222, 128), C(96, 165, 250) }
+				local swags = 7
+				local pts = {}
+				local per = 8
+				for i = 0, swags * per do
+					local frac = (i % per) / per
+					pts[#pts + 1] = { x = size.X * i / (swags * per), y = 3 + 6 * math.sin(math.pi * frac) }
+				end
+				for i = 1, #pts - 1 do
+					local a, b = pts[i], pts[i + 1]
+					local mx, my = (a.x + b.x) / 2, (a.y + b.y) / 2
+					local len = math.sqrt((b.x - a.x) ^ 2 + (b.y - a.y) ^ 2)
+					track(win, create("Frame", {
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Position = UDim2.fromOffset(mx, my),
+						Size = UDim2.fromOffset(len + 1, 2),
+						Rotation = math.deg(math.atan2(b.y - a.y, b.x - a.x)),
+						BackgroundColor3 = C(20, 70, 40),
+						ZIndex = 55,
+						Parent = decor,
+					}))
+				end
+				win.SeasonBulbs = {}
+				for i = 2, #pts - 1, 2 do
+					local p = pts[i]
+					local bulb = track(win, create("Frame", {
+						AnchorPoint = Vector2.new(0.5, 0),
+						Position = UDim2.fromOffset(p.x, p.y),
+						Size = UDim2.fromOffset(8, 11),
+						BackgroundColor3 = colors[math.floor(i / 2) % #colors + 1],
+						ZIndex = 56,
+						Parent = decor,
+					}, { create("UICorner", { CornerRadius = UDim.new(0.5, 0) }) }))
+					win.SeasonBulbs[#win.SeasonBulbs + 1] = bulb
+				end
+				if cfg.Effects then
+					addUpdater(win, function(_, t)
+						for i, b in ipairs(win.SeasonBulbs) do
+							b.BackgroundTransparency = 0.45 * (0.5 + 0.5 * math.sin(t * 2.6 + i * 1.7))
+						end
+					end)
+				end
+			end)
+			-- cards + nav
+			for _, page in ipairs(win.Pages) do
+				win:_seasonPage(page)
+			end
+		end
+
+		if cfg.Effects then
+			local n = math.floor(46 * cfg.Intensity)
+			local flakes = {}
+			for i = 1, n do
+				local s = math.random(7, 17)
+				local lbl = track(win, glyph(fx, pick(g.Flake), s, {
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					ZIndex = 60,
+					TextColor3 = C(240, 246, 255),
+				}))
+				setAlpha(lbl, rand(0.1, 0.55))
+				flakes[i] = {
+					o = lbl,
+					x = math.random(),
+					y = math.random(),
+					vy = rand(0.07, 0.2) * (s / 12),
+					ph = rand(0, TAU),
+					fr = rand(0.6, 1.6),
+					amp = rand(0.006, 0.02),
+					vr = rand(-40, 40),
+				}
+			end
+			addUpdater(win, function(dt, t)
+				for _, f in ipairs(flakes) do
+					f.y = f.y + f.vy * dt
+					if f.y > 1.04 then
+						f.y = -0.04
+						f.x = math.random()
+					end
+					f.o.Position = UDim2.fromScale(f.x + math.sin(t * f.fr + f.ph) * f.amp, f.y)
+					f.o.Rotation = (f.o.Rotation + f.vr * dt) % 360
+				end
+			end)
+		end
+	end
+
+	-- ---- Halloween -----------------------------------------------------------
+	local function sectionHalloween(win, sec, g)
+		if not sec.Card or sec.SeasonDecor then
+			return
+		end
+		local holder = create("Frame", {
+			Name = "SeasonDecor",
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 0),
+			LayoutOrder = -100,
+			ZIndex = 4,
+			Parent = sec.Card,
+		})
+		sec.SeasonDecor = holder
+		local web = glyph(holder, g.Web, 26, { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -4, 0, -8), Rotation = 90, ZIndex = 5 })
+		setAlpha(web, 0.35)
+		local n = (sec.Tab and #sec.Tab.Sections) or 1
+		if n % 2 == 0 then
+			glyph(holder, g.Pumpkin, 18, { Position = UDim2.new(0, 10, 0, -14), Rotation = -12, ZIndex = 5 })
+		end
+	end
+
+	local function buildHalloween(win, cfg, S, layers)
+		local g = S.Glyphs
+		local size = px(win)
+		local decor, fx = layers.decor, layers.fx
+
+		if cfg.Decor then
+			pcall(function()
+				local logoBox = win.LogoText and win.LogoText.Parent
+				local avatar = win.AvatarImage and win.AvatarImage.Parent
+				if logoBox and logoBox.Parent then
+					track(win, glyph(logoBox.Parent, g.Pumpkin, 22, { Position = UDim2.fromOffset(44, 6), Rotation = 14, ZIndex = 8 }))
+				end
+				if avatar and avatar.Parent then
+					track(win, glyph(avatar.Parent, g.Pumpkin, 20, { Position = UDim2.fromOffset(40, 10), Rotation = 10, ZIndex = 8 }))
+				end
+				-- cobwebs in every corner
+				local corners = {
+					{ Vector2.new(0, 0), UDim2.fromScale(0, 0), 0 },
+					{ Vector2.new(1, 0), UDim2.fromScale(1, 0), 90 },
+					{ Vector2.new(1, 1), UDim2.fromScale(1, 1), 180 },
+					{ Vector2.new(0, 1), UDim2.fromScale(0, 1), 270 },
+				}
+				for _, c in ipairs(corners) do
+					local w = track(win, glyph(decor, g.Web, 64, { AnchorPoint = c[1], Position = c[2], Rotation = c[3], ZIndex = 55 }))
+					setAlpha(w, 0.4)
+				end
+				-- slime dripping from the top edge
+				local slime = C(112, 190, 20)
+				track(win, create("Frame", {
+					Size = UDim2.new(1, 0, 0, 5),
+					BackgroundColor3 = slime,
+					ZIndex = 55,
+					Parent = decor,
+				}))
+				local drips = {}
+				local x = 30
+				while x < size.X - 30 do
+					local w = math.random(7, 12)
+					local body = track(win, create("Frame", {
+						Position = UDim2.fromOffset(x, 3),
+						Size = UDim2.fromOffset(w, 12),
+						BackgroundColor3 = slime,
+						ZIndex = 55,
+						Parent = decor,
+					}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) }))
+					drips[#drips + 1] = { o = body, base = rand(8, 24), ph = rand(0, TAU), sp = rand(0.5, 1.2) }
+					x = x + math.random(46, 130)
+				end
+				if cfg.Effects then
+					addUpdater(win, function(_, t)
+						for _, d in ipairs(drips) do
+							local l = d.base + 5 * math.sin(t * d.sp + d.ph)
+							d.o.Size = UDim2.fromOffset(d.o.Size.X.Offset, l)
+						end
+					end)
+				end
+				-- dangling spider
+				local thread = track(win, create("Frame", {
+					Position = UDim2.new(0, size.X * 0.585, 0, 0),
+					Size = UDim2.fromOffset(1, 40),
+					BackgroundColor3 = C(200, 200, 210),
+					BackgroundTransparency = 0.3,
+					ZIndex = 55,
+					Parent = decor,
+				}))
+				local spider = track(win, glyph(decor, g.Spider, 20, {
+					AnchorPoint = Vector2.new(0.5, 0),
+					Position = UDim2.new(0, size.X * 0.585, 0, 38),
+					ZIndex = 56,
+				}))
+				if cfg.Effects then
+					addUpdater(win, function(_, t)
+						local len = 34 + 22 * (0.5 + 0.5 * math.sin(t * 0.8))
+						thread.Size = UDim2.fromOffset(1, len)
+						spider.Position = UDim2.new(0, size.X * 0.585, 0, len - 2)
+					end)
+				end
+				-- pulsing window glow
+				local stroke = win.Main:FindFirstChildOfClass("UIStroke")
+				if stroke and cfg.Effects then
+					addUpdater(win, function(_, t)
+						stroke.Color = C(255, 117, 24):Lerp(C(150, 70, 220), 0.5 + 0.5 * math.sin(t * 1.3))
+						stroke.Thickness = 1.5 + 0.5 * math.sin(t * 2.1)
+					end)
+				end
+				-- drifting fog
+				if cfg.Effects then
+					local fogs = {}
+					for i = 1, 2 do
+						local f = track(win, create("Frame", {
+							AnchorPoint = Vector2.new(0, 1),
+							Position = UDim2.fromScale(-0.3, 1),
+							Size = UDim2.new(1.6, 0, 0, 110),
+							BackgroundColor3 = C(150, 120, 190),
+							ZIndex = 52,
+							Parent = decor,
+						}, {
+							create("UIGradient", {
+								Rotation = 90,
+								Transparency = NumberSequence.new({
+									NumberSequenceKeypoint.new(0, 1),
+									NumberSequenceKeypoint.new(1, 0.82),
+								}),
+							}),
+						}))
+						fogs[i] = { o = f, sp = i == 1 and 0.012 or -0.008, x = i == 1 and -0.3 or -0.1 }
+					end
+					addUpdater(win, function(dt)
+						for _, f in ipairs(fogs) do
+							f.x = f.x + f.sp * dt
+							if f.x > -0.05 then
+								f.sp = -math.abs(f.sp)
+							elseif f.x < -0.55 then
+								f.sp = math.abs(f.sp)
+							end
+							f.o.Position = UDim2.fromScale(f.x, 1)
+						end
+					end)
+				end
+			end)
+			for _, page in ipairs(win.Pages) do
+				win:_seasonPage(page)
+			end
+		end
+
+		if cfg.Effects then
+			-- embers
+			local embers = {}
+			for i = 1, math.floor(26 * cfg.Intensity) do
+				local s = math.random(10, 18)
+				local o = track(win, glyph(fx, g.Ember, s, { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 60, TextColor3 = C(255, 140, 40) }))
+				embers[i] = { o = o, x = math.random(), y = math.random(), vy = -rand(0.04, 0.12), ph = rand(0, TAU), amp = rand(0.004, 0.014) }
+			end
+			-- bats
+			local bats = {}
+			for i = 1, math.max(2, math.floor(5 * cfg.Intensity)) do
+				local o = track(win, glyph(fx, g.Bat, math.random(18, 26), { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 61 }))
+				bats[i] = { o = o, x = rand(-0.2, 1.1), y = rand(0.08, 0.7), vx = rand(0.06, 0.16), ph = rand(0, TAU) }
+			end
+			-- ghosts
+			local ghosts = {}
+			for i = 1, math.max(1, math.floor(3 * cfg.Intensity)) do
+				local o = track(win, glyph(fx, g.Ghost, math.random(24, 34), { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 59 }))
+				ghosts[i] = { o = o, x = rand(0.1, 0.9), y = rand(0.2, 1.1), vy = -rand(0.015, 0.04), ph = rand(0, TAU) }
+			end
+			addUpdater(win, function(dt, t)
+				for _, e in ipairs(embers) do
+					e.y = e.y + e.vy * dt
+					if e.y < -0.05 then
+						e.y = 1.05
+						e.x = math.random()
+					end
+					e.o.Position = UDim2.fromScale(e.x + math.sin(t + e.ph) * e.amp, e.y)
+					setAlpha(e.o, math.clamp(0.15 + (1 - e.y) * 0.8, 0, 1))
+				end
+				for _, b in ipairs(bats) do
+					b.x = b.x + b.vx * dt
+					if b.x > 1.1 then
+						b.x = -0.1
+						b.y = rand(0.08, 0.7)
+					end
+					b.o.Position = UDim2.fromScale(b.x, b.y + math.sin(t * 3 + b.ph) * 0.025)
+					b.o.Rotation = math.sin(t * 5 + b.ph) * 14
+				end
+				for _, gh in ipairs(ghosts) do
+					gh.y = gh.y + gh.vy * dt
+					if gh.y < -0.1 then
+						gh.y = 1.1
+						gh.x = rand(0.1, 0.9)
+					end
+					gh.o.Position = UDim2.fromScale(gh.x + math.sin(t * 0.7 + gh.ph) * 0.03, gh.y)
+					setAlpha(gh.o, 0.55 + 0.2 * math.sin(t * 1.6 + gh.ph))
+				end
+			end)
+		end
+	end
+
+	-- ---- public API ----------------------------------------------------------
+	local function normalizeCfg(cfg)
+		local out = { Theme = true, Effects = true, Decor = true, Intensity = 1, Screen = false }
+		if type(cfg) == "table" then
+			for k, v in pairs(cfg) do
+				out[k] = v
+			end
+		end
+		out.Intensity = math.clamp(tonumber(out.Intensity) or 1, 0.1, 4)
+		return out
+	end
+
+	function WindowClass:_seasonPage(page)
+		local name = self.Season
+		local S = name and Seasons[name]
+		if not S or not self.SeasonCfg or not self.SeasonCfg.Decor then
+			return
+		end
+		pcall(function()
+			if name == "Christmas" and page.NavButton and not page.SeasonHat then
+				page.SeasonHat = santaHat(page.NavButton, 14, UDim2.fromOffset(8, 1), -20, 6)
+				track(self, page.SeasonHat)
+			end
+			for _, tab in ipairs(page.Tabs) do
+				for _, sec in ipairs(tab.Sections) do
+					if not sec.SeasonDecor then
+						if name == "Christmas" then
+							sectionChristmas(self, sec, S.Glyphs)
+						else
+							sectionHalloween(self, sec, S.Glyphs)
+						end
+						if sec.SeasonDecor then
+							track(self, sec.SeasonDecor)
+						end
+					end
+				end
+			end
+		end)
+	end
+
+	function WindowClass:GetSeason()
+		return self.Season
+	end
+
+	function WindowClass:SetSeason(name, cfg)
+		if name == false or name == "" or name == "None" or name == "Off" then
+			name = nil
+		end
+		if name ~= nil and not Seasons[name] then
+			warn("[ReduceUI] unknown season: " .. tostring(name))
+			return false
+		end
+		local hadTheme = self.SeasonCfg and self.SeasonCfg.Theme and self.Season ~= nil
+		fxClear(self)
+		for _, page in ipairs(self.Pages) do
+			page.SeasonHat = nil
+			for _, tab in ipairs(page.Tabs) do
+				for _, sec in ipairs(tab.Sections) do
+					sec.SeasonDecor = nil
+				end
+			end
+		end
+		for _, n in ipairs({ "SeasonFXDecor", "SeasonFXParticles" }) do
+			local old = self[n]
+			if old then
+				old:Destroy()
+				self[n] = nil
+			end
+		end
+		self.ParticleLayer = nil
+		self.Season = name
+		if not name then
+			self.SeasonCfg = nil
+			if hadTheme then
+				Library:SetTheme("Default")
+			else
+				runBinds()
+			end
+			return true
+		end
+		local S = Seasons[name]
+		local c = normalizeCfg(cfg)
+		self.SeasonCfg = c
+		if c.Theme then
+			Library:SetTheme(S.Preset)
+		end
+		local decor = newLayer(self.Main, "SeasonDecor", 50, false)
+		self.SeasonFXDecor = decor
+		local fx
+		if c.Screen then
+			fx = newLayer(self.Gui, "SeasonParticles", 1, false)
+			self.SeasonFXParticles = fx
+		else
+			fx = newLayer(self.Main, "SeasonParticles", 49, true)
+			self.SeasonFXParticles = fx
+		end
+		self.ParticleLayer = fx
+		local layers = { decor = decor, fx = fx }
+		self.FXObjects = self.FXObjects or {}
+		self.FXUpdaters = self.FXUpdaters or {}
+		if name == "Christmas" then
+			buildChristmas(self, c, S, layers)
+		else
+			buildHalloween(self, c, S, layers)
+		end
+		if #self.FXUpdaters > 0 then
+			startLoop(self)
+		end
+		return true
+	end
+
+	-- decorate pages / sections that are created after the season is enabled
+	local origAddPage = WindowClass.AddPage
+	function WindowClass:AddPage(...)
+		local page = origAddPage(self, ...)
+		if self.Season then
+			self:_seasonPage(page)
+		end
+		return page
+	end
+	local origTabAdd = TabClass.AddSection
+	function TabClass:AddSection(...)
+		local sec = origTabAdd(self, ...)
+		local win = self.Page and self.Page.Window
+		if win and win.Season then
+			win:_seasonPage(self.Page)
+		end
+		return sec
+	end
+
+	-- season emoji in notification titles
+	local origNotify = WindowClass.Notify
+	function WindowClass:Notify(opts)
+		local S = self.Season and Seasons[self.Season]
+		if S and type(opts) == "table" and not opts.NoSeasonIcon and not isAsset(S.Emoji) then
+			local copy = {}
+			for k, v in pairs(opts) do
+				copy[k] = v
+			end
+			copy.Title = S.Emoji .. " " .. tostring(opts.Title or "Notice")
+			opts = copy
+		end
+		return origNotify(self, opts)
+	end
+
+	-- the owner switches it on in CreateWindow
+	local origCreate = Library.CreateWindow
+	function Library:CreateWindow(opts)
+		local win = origCreate(self, opts)
+		opts = opts or {}
+		win.SizePx = opts.Size or Vector2.new(1000, 640)
+		local name, cfg
+		if opts.Season and Seasons[opts.Season] then
+			name, cfg = opts.Season, opts.SeasonConfig
+		elseif opts.Halloween then
+			name, cfg = "Halloween", opts.Halloween
+		elseif opts.Christmas then
+			name, cfg = "Christmas", opts.Christmas
+		end
+		if name then
+			win:SetSeason(name, type(cfg) == "table" and cfg or opts.SeasonConfig)
+		end
+		return win
+	end
+end
+
 
 return Library
