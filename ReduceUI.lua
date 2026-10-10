@@ -48,6 +48,48 @@ Library.Presets = {
 	Rose = { Accent = Color3.fromRGB(244, 114, 182) },
 	Violet = { Accent = Color3.fromRGB(167, 139, 250) },
 	Amber = { Accent = Color3.fromRGB(251, 191, 36) },
+	Halloween = {
+		Accent = Color3.fromRGB(249, 115, 22),
+		Background = Color3.fromRGB(12, 10, 14),
+		Sidebar = Color3.fromRGB(16, 12, 18),
+		Card = Color3.fromRGB(22, 18, 24),
+		Input = Color3.fromRGB(14, 11, 16),
+		Active = Color3.fromRGB(48, 28, 14),
+		Stroke = Color3.fromRGB(42, 28, 18),
+		StrokeLight = Color3.fromRGB(90, 50, 22),
+		Text = Color3.fromRGB(245, 240, 235),
+		Muted = Color3.fromRGB(160, 145, 130),
+		Dim = Color3.fromRGB(110, 95, 85),
+		Dot = Color3.fromRGB(100, 70, 40),
+		Notes = {
+			Green = { Text = Color3.fromRGB(249, 115, 22), Bg = Color3.fromRGB(48, 28, 12) },
+			Yellow = { Text = Color3.fromRGB(251, 191, 36), Bg = Color3.fromRGB(54, 42, 12) },
+			Red = { Text = Color3.fromRGB(239, 68, 68), Bg = Color3.fromRGB(58, 22, 22) },
+			Gray = { Text = Color3.fromRGB(160, 145, 130), Bg = Color3.fromRGB(32, 28, 30) },
+			Blue = { Text = Color3.fromRGB(147, 130, 255), Bg = Color3.fromRGB(28, 22, 48) },
+		},
+	},
+	Christmas = {
+		Accent = Color3.fromRGB(220, 38, 38),
+		Background = Color3.fromRGB(10, 14, 12),
+		Sidebar = Color3.fromRGB(12, 18, 15),
+		Card = Color3.fromRGB(18, 24, 20),
+		Input = Color3.fromRGB(12, 16, 14),
+		Active = Color3.fromRGB(28, 48, 32),
+		Stroke = Color3.fromRGB(30, 42, 34),
+		StrokeLight = Color3.fromRGB(60, 90, 70),
+		Text = Color3.fromRGB(245, 250, 245),
+		Muted = Color3.fromRGB(140, 160, 145),
+		Dim = Color3.fromRGB(95, 110, 100),
+		Dot = Color3.fromRGB(70, 100, 80),
+		Notes = {
+			Green = { Text = Color3.fromRGB(34, 197, 94), Bg = Color3.fromRGB(16, 42, 28) },
+			Yellow = { Text = Color3.fromRGB(250, 204, 21), Bg = Color3.fromRGB(48, 40, 12) },
+			Red = { Text = Color3.fromRGB(248, 113, 113), Bg = Color3.fromRGB(52, 20, 20) },
+			Gray = { Text = Color3.fromRGB(150, 160, 155), Bg = Color3.fromRGB(30, 34, 32) },
+			Blue = { Text = Color3.fromRGB(125, 211, 252), Bg = Color3.fromRGB(18, 32, 48) },
+		},
+	},
 }
 local DefaultTheme = {}
 for k, v in pairs(Theme) do
@@ -784,6 +826,291 @@ local function makeNote(parent, text, colorKey)
 	return pill, lbl
 end
 
+local SEASONAL_IMAGES = {
+	-- Halloween (public catalog decals; rbxthumb used for reliable UI loading)
+	Bat = "rbxthumb://type=Asset&id=13915312936&w=150&h=150",
+	BatAlt = "rbxthumb://type=Asset&id=5758643056&w=150&h=150",
+	Pumpkin = "rbxthumb://type=Asset&id=5634829236&w=150&h=150",
+	PumpkinAlt = "rbxthumb://type=Asset&id=36517427&w=150&h=150",
+	Web = "rbxthumb://type=Asset&id=18912486432&w=150&h=150",
+	-- Christmas
+	Snowflake = "rbxthumb://type=Asset&id=6034320993&w=150&h=150",
+	Tree = "rbxthumb://type=Asset&id=15171016920&w=150&h=150",
+	SantaHat = "rbxthumb://type=Asset&id=15224275868&w=150&h=150",
+	Gift = "rbxthumb://type=Asset&id=1952551&w=150&h=150",
+	Star = "rbxthumb://type=Asset&id=6034320993&w=150&h=150",
+}
+
+local function fxImage(parent, image, size, position, anchor, transparency, z, color)
+	local img = create("ImageLabel", {
+		BackgroundTransparency = 1,
+		Image = image,
+		Size = typeof(size) == "UDim2" and size or UDim2.fromOffset(size, size),
+		Position = position or UDim2.new(),
+		AnchorPoint = anchor or Vector2.new(0, 0),
+		ImageTransparency = transparency or 0.2,
+		ImageColor3 = color or Color3.new(1, 1, 1),
+		ScaleType = Enum.ScaleType.Fit,
+		ZIndex = z or 1,
+		Parent = parent,
+	})
+	return img
+end
+
+local function spawnHalloweenEffects(parent, connections)
+	local layer = create("Frame", {
+		Name = "SeasonalFX",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		ZIndex = 0,
+		ClipsDescendants = true,
+		Parent = parent,
+	})
+
+	-- night vignette
+	create("Frame", {
+		Size = UDim2.fromScale(1, 1),
+		BackgroundColor3 = Color3.fromRGB(6, 3, 10),
+		BackgroundTransparency = 0.78,
+		ZIndex = 0,
+		Parent = layer,
+	})
+
+	-- soft orange ambient glows
+	for i = 1, 5 do
+		local orb = create("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0.12 + i * 0.16, 0, 0.2 + (i % 3) * 0.22, 0),
+			Size = UDim2.fromOffset(100 + i * 12, 100 + i * 12),
+			BackgroundColor3 = Color3.fromRGB(249, 115, 22),
+			BackgroundTransparency = 0.94,
+			ZIndex = 0,
+			Parent = layer,
+		}, { corner(60) })
+		task.spawn(function()
+			local phase = i * 0.85
+			while orb.Parent do
+				local t = os.clock() + phase
+				orb.BackgroundTransparency = 0.92 + math.sin(t * 0.55) * 0.035
+				task.wait(0.1)
+			end
+		end)
+	end
+
+	-- moon (procedural for clean soft look)
+	local moon = create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(0.78, 0, 0.11, 0),
+		Size = UDim2.fromOffset(64, 64),
+		BackgroundColor3 = Color3.fromRGB(245, 240, 220),
+		BackgroundTransparency = 0.08,
+		ZIndex = 1,
+		Parent = layer,
+	}, { corner(32) })
+	create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(0.68, 0, 0.36, 0),
+		Size = UDim2.fromOffset(46, 46),
+		BackgroundColor3 = Color3.fromRGB(12, 10, 14),
+		BackgroundTransparency = 0.25,
+		ZIndex = 2,
+		Parent = moon,
+	}, { corner(23) })
+	-- moon glow ring
+	create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromOffset(90, 90),
+		BackgroundColor3 = Color3.fromRGB(255, 220, 160),
+		BackgroundTransparency = 0.92,
+		ZIndex = 0,
+		Parent = moon,
+	}, { corner(45) })
+
+	-- flying bats (real images)
+	local batPositions = {
+		{ 0.06, 0.07, 28 }, { 0.18, 0.03, 22 }, { 0.32, 0.09, 26 },
+		{ 0.48, 0.02, 20 }, { 0.62, 0.06, 30 }, { 0.88, 0.04, 24 },
+		{ 0.12, 0.16, 18 }, { 0.94, 0.14, 22 }, { 0.55, 0.12, 16 },
+		{ 0.72, 0.18, 20 }, { 0.28, 0.15, 18 },
+	}
+	for i, pos in ipairs(batPositions) do
+		local img = (i % 2 == 0) and SEASONAL_IMAGES.Bat or SEASONAL_IMAGES.BatAlt
+		local bat = fxImage(layer, img, pos[3], UDim2.new(pos[1], 0, pos[2], 0), nil, 0.18 + (i % 3) * 0.05, 2, Color3.fromRGB(30, 25, 35))
+		task.spawn(function()
+			local baseY, baseX = pos[2], pos[1]
+			local phase = i * 0.65
+			local speed = 0.28 + (i % 4) * 0.08
+			while bat.Parent do
+				local t = os.clock() + phase
+				bat.Position = UDim2.new(baseX + math.sin(t * speed) * 0.025, 0, baseY + math.sin(t * (speed + 0.2)) * 0.014, 0)
+				bat.Rotation = math.sin(t * 0.95) * 12
+				task.wait(0.04)
+			end
+		end)
+	end
+
+	-- spider webs in corners (image + soft procedural fallback ring)
+	local webSpots = {
+		{ Vector2.new(0, 0), UDim2.fromOffset(-4, -4), -8, 110 },
+		{ Vector2.new(1, 0), UDim2.new(1, 4, 0, -2), 14, 100 },
+		{ Vector2.new(0, 1), UDim2.new(0, -6, 1, 2), 20, 95 },
+	}
+	for _, w in ipairs(webSpots) do
+		local web = fxImage(layer, SEASONAL_IMAGES.Web, w[4], w[2], w[1], 0.55, 1, Color3.fromRGB(200, 190, 180))
+		web.Rotation = w[3]
+	end
+
+	-- pumpkins along lower left (sidebar area)
+	for i = 1, 4 do
+		local pk = fxImage(
+			layer,
+			(i % 2 == 0) and SEASONAL_IMAGES.Pumpkin or SEASONAL_IMAGES.PumpkinAlt,
+			22 + i * 4,
+			UDim2.new(0.015 + (i - 1) * 0.055, 0, 0.86 + (i % 2) * 0.02, 0),
+			nil,
+			0.12,
+			2,
+			Color3.fromRGB(255, 200, 120)
+		)
+		task.spawn(function()
+			local phase = i * 1.15
+			while pk.Parent do
+				local t = os.clock() + phase
+				pk.Rotation = math.sin(t * 0.7) * 5
+				pk.ImageTransparency = 0.1 + math.sin(t * 0.5) * 0.04
+				task.wait(0.08)
+			end
+		end)
+	end
+
+	return layer
+end
+
+local function spawnChristmasEffects(parent, connections)
+	local layer = create("Frame", {
+		Name = "SeasonalFX",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		ZIndex = 0,
+		ClipsDescendants = true,
+		Parent = parent,
+	})
+
+	-- cool night vignette
+	create("Frame", {
+		Size = UDim2.fromScale(1, 1),
+		BackgroundColor3 = Color3.fromRGB(4, 10, 8),
+		BackgroundTransparency = 0.82,
+		ZIndex = 0,
+		Parent = layer,
+	})
+
+	-- soft festive glows
+	local glowColors = {
+		Color3.fromRGB(220, 38, 38),
+		Color3.fromRGB(34, 197, 94),
+		Color3.fromRGB(250, 204, 21),
+		Color3.fromRGB(34, 197, 94),
+		Color3.fromRGB(220, 38, 38),
+	}
+	for i = 1, 5 do
+		local orb = create("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0.1 + i * 0.16, 0, 0.25 + (i % 2) * 0.28, 0),
+			Size = UDim2.fromOffset(95, 95),
+			BackgroundColor3 = glowColors[i],
+			BackgroundTransparency = 0.945,
+			ZIndex = 0,
+			Parent = layer,
+		}, { corner(48) })
+		task.spawn(function()
+			local phase = i * 0.75
+			while orb.Parent do
+				local t = os.clock() + phase
+				orb.BackgroundTransparency = 0.93 + math.sin(t * 0.5) * 0.03
+				task.wait(0.12)
+			end
+		end)
+	end
+
+	-- falling snow particles (soft white circles — clean, professional)
+	for i = 1, 36 do
+		local size = 3 + math.random(0, 5)
+		local flake = create("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(math.random() * 1.1 - 0.05, 0, -0.12 - math.random() * 0.4, 0),
+			Size = UDim2.fromOffset(size, size),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 0.15 + math.random() * 0.45,
+			ZIndex = 2,
+			Parent = layer,
+		}, { corner(math.ceil(size / 2)) })
+		-- occasional image snowflake for variety
+		if i % 7 == 0 then
+			local img = fxImage(layer, SEASONAL_IMAGES.Snowflake, 12 + math.random(0, 8), flake.Position, Vector2.new(0.5, 0.5), 0.25, 2)
+			task.spawn(function()
+				local x = img.Position.X.Scale
+				local speed = 0.035 + math.random() * 0.07
+				local sway = 0.25 + math.random() * 0.45
+				local phase = math.random() * 12
+				while img.Parent do
+					local t = os.clock() + phase
+					local y = img.Position.Y.Scale + speed * 0.016
+					if y > 1.12 then
+						y = -0.08
+						x = math.random() * 1.1 - 0.05
+					end
+					img.Position = UDim2.new(x + math.sin(t * sway) * 0.01, 0, y, 0)
+					img.Rotation = t * 18
+					task.wait(0.04)
+				end
+			end)
+		end
+		task.spawn(function()
+			local x = flake.Position.X.Scale
+			local speed = 0.03 + math.random() * 0.08
+			local sway = 0.3 + math.random() * 0.5
+			local phase = math.random() * 10
+			while flake.Parent do
+				local t = os.clock() + phase
+				local y = flake.Position.Y.Scale + speed * 0.016
+				if y > 1.12 then
+					y = -0.08
+					x = math.random() * 1.1 - 0.05
+				end
+				flake.Position = UDim2.new(x + math.sin(t * sway) * 0.01, 0, y, 0)
+				task.wait(0.04)
+			end
+		end)
+	end
+
+	-- corner decorations: santa hats, trees, gifts (real images)
+	local decos = {
+		{ SEASONAL_IMAGES.SantaHat, 0.03, 0.04, 36, Color3.fromRGB(255, 255, 255) },
+		{ SEASONAL_IMAGES.Tree, 0.1, 0.02, 32, Color3.fromRGB(200, 255, 200) },
+		{ SEASONAL_IMAGES.Snowflake, 0.8, 0.03, 22, Color3.fromRGB(255, 255, 255) },
+		{ SEASONAL_IMAGES.Gift, 0.9, 0.06, 30, Color3.fromRGB(255, 220, 220) },
+		{ SEASONAL_IMAGES.Tree, 0.88, 0.86, 34, Color3.fromRGB(180, 255, 180) },
+		{ SEASONAL_IMAGES.SantaHat, 0.04, 0.88, 34, Color3.fromRGB(255, 255, 255) },
+		{ SEASONAL_IMAGES.Star, 0.5, 0.015, 18, Color3.fromRGB(255, 230, 150) },
+	}
+	for i, d in ipairs(decos) do
+		local el = fxImage(layer, d[1], d[4], UDim2.new(d[2], 0, d[3], 0), nil, 0.08, 2, d[5])
+		task.spawn(function()
+			local phase = i * 1.05
+			while el.Parent do
+				local t = os.clock() + phase
+				el.Rotation = math.sin(t * 0.65) * 8
+				el.ImageTransparency = 0.05 + math.sin(t * 0.4) * 0.04
+				task.wait(0.08)
+			end
+		end)
+	end
+
+	return layer
+end
+
 function Library:CreateWindow(opts)
 	opts = opts or {}
 	ensureIcons()
@@ -801,10 +1128,20 @@ function Library:CreateWindow(opts)
 	self.ResultIndex = 0
 	self.Flags = {}
 	self.ConfigFolder = opts.ConfigFolder or Library.ConfigFolder or "ReduceUI/configs"
+	self.Season = nil
 
 	local size = opts.Size or Vector2.new(1000, 640)
 	local lp = Players.LocalPlayer
 	local userOpts = opts.User or {}
+
+	-- Seasonal themes (opt-in by script owner)
+	if opts.Halloween == true then
+		self.Season = "Halloween"
+		Library:SetTheme("Halloween")
+	elseif opts.Christmas == true then
+		self.Season = "Christmas"
+		Library:SetTheme("Christmas")
+	end
 
 	local gui = create("ScreenGui", {
 		Name = opts.Name or "ReduceUI",
@@ -828,6 +1165,12 @@ function Library:CreateWindow(opts)
 	}, { corner(14), stroke("Stroke") })
 	self.Main = main
 	self.IsCanvas = useCanvas
+
+	if self.Season == "Halloween" then
+		spawnHalloweenEffects(main, self.Connections)
+	elseif self.Season == "Christmas" then
+		spawnChristmasEffects(main, self.Connections)
+	end
 
 	self.Scale = create("UIScale", { Parent = main })
 	self.BaseScale = 1
@@ -870,6 +1213,15 @@ function Library:CreateWindow(opts)
 		Bg = "Card",
 		Parent = sbHeader,
 	}, { corner(10), stroke("Stroke") })
+	local seasonalLogoIcon = nil
+	if opts.LogoIcon == nil and opts.Logo == nil then
+		if self.Season == "Halloween" then
+			seasonalLogoIcon = SEASONAL_IMAGES.Pumpkin
+		elseif self.Season == "Christmas" then
+			seasonalLogoIcon = SEASONAL_IMAGES.Tree
+		end
+	end
+	local logoIconArg = opts.LogoIcon or seasonalLogoIcon
 	self.LogoText = newLabel({
 		Size = UDim2.fromScale(1, 1),
 		Text = opts.Logo or "R",
@@ -878,9 +1230,9 @@ function Library:CreateWindow(opts)
 		TextXAlignment = Enum.TextXAlignment.Center,
 		Parent = logoBox,
 	})
-	self.LogoIcon = newIcon(logoBox, opts.LogoIcon, 20, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5), "Text")
-	self.LogoIcon:SetShown(opts.LogoIcon ~= nil)
-	self.LogoText.Visible = opts.LogoIcon == nil
+	self.LogoIcon = newIcon(logoBox, logoIconArg, 22, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5), "Text")
+	self.LogoIcon:SetShown(logoIconArg ~= nil)
+	self.LogoText.Visible = logoIconArg == nil
 	self.SidebarTitle = newLabel({
 		Position = UDim2.fromOffset(68, 0),
 		Size = UDim2.new(1, -88, 1, 0),
@@ -1524,11 +1876,17 @@ function WindowClass:Notify(opts)
 		padding(16, 12, 16, 0),
 		list(Enum.FillDirection.Vertical, 3),
 	})
+	local toastStroke = toast:FindFirstChildOfClass("UIStroke")
 	local sc = create("UIScale", { Scale = 0.9, Parent = toast })
 	if self.IsCanvas then
 		toast.GroupTransparency = 1
+	else
+		toast.BackgroundTransparency = 1
+		if toastStroke then
+			toastStroke.Transparency = 1
+		end
 	end
-	newLabel({
+	local titleLbl = newLabel({
 		Size = UDim2.new(1, 0, 0, 16),
 		Text = opts.Title or "Notice",
 		Font = FONT_MED,
@@ -1537,7 +1895,7 @@ function WindowClass:Notify(opts)
 		LayoutOrder = 1,
 		Parent = toast,
 	})
-	newLabel({
+	local bodyLbl = newLabel({
 		Size = UDim2.new(1, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Text = opts.Text or "",
@@ -1548,6 +1906,10 @@ function WindowClass:Notify(opts)
 		LayoutOrder = 2,
 		Parent = toast,
 	})
+	if not self.IsCanvas then
+		titleLbl.TextTransparency = 1
+		bodyLbl.TextTransparency = 1
+	end
 	create("Frame", {
 		Size = UDim2.new(1, 0, 0, 8),
 		BackgroundTransparency = 1,
@@ -1557,20 +1919,35 @@ function WindowClass:Notify(opts)
 	local duration = opts.Duration or 4
 	if self.IsCanvas then
 		tween(toast, 0.3, { GroupTransparency = 0 })
+	else
+		tween(toast, 0.3, { BackgroundTransparency = 0 })
+		if toastStroke then
+			tween(toastStroke, 0.3, { Transparency = 0 })
+		end
+		tween(titleLbl, 0.3, { TextTransparency = 0 })
+		tween(bodyLbl, 0.3, { TextTransparency = 0 })
 	end
 	tween(sc, 0.4, { Scale = 1 }, Enum.EasingStyle.Back)
 	task.delay(duration, function()
-		if toast.Parent then
-			if self.IsCanvas then
-				tween(toast, 0.25, { GroupTransparency = 1 })
-			end
-			tween(sc, 0.25, { Scale = 0.9 })
-			task.delay(0.26, function()
-				if toast.Parent then
-					toast:Destroy()
-				end
-			end)
+		if not toast.Parent then
+			return
 		end
+		if self.IsCanvas then
+			tween(toast, 0.22, { GroupTransparency = 1 })
+		else
+			tween(toast, 0.22, { BackgroundTransparency = 1 })
+			tween(titleLbl, 0.22, { TextTransparency = 1 })
+			tween(bodyLbl, 0.22, { TextTransparency = 1 })
+		end
+		if toastStroke then
+			tween(toastStroke, 0.18, { Transparency = 1 })
+		end
+		tween(sc, 0.22, { Scale = 0.9 })
+		task.delay(0.24, function()
+			if toast.Parent then
+				toast:Destroy()
+			end
+		end)
 	end)
 end
 
