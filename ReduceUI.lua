@@ -49,45 +49,45 @@ Library.Presets = {
 	Violet = { Accent = Color3.fromRGB(167, 139, 250) },
 	Amber = { Accent = Color3.fromRGB(251, 191, 36) },
 	Halloween = {
-		Accent = Color3.fromRGB(249, 115, 22),
-		Background = Color3.fromRGB(12, 10, 14),
-		Sidebar = Color3.fromRGB(16, 12, 18),
-		Card = Color3.fromRGB(22, 18, 24),
-		Input = Color3.fromRGB(14, 11, 16),
-		Active = Color3.fromRGB(48, 28, 14),
-		Stroke = Color3.fromRGB(42, 28, 18),
-		StrokeLight = Color3.fromRGB(90, 50, 22),
-		Text = Color3.fromRGB(245, 240, 235),
-		Muted = Color3.fromRGB(160, 145, 130),
-		Dim = Color3.fromRGB(110, 95, 85),
-		Dot = Color3.fromRGB(100, 70, 40),
+		Accent = Color3.fromRGB(255, 140, 40),
+		Background = Color3.fromRGB(8, 6, 10),
+		Sidebar = Color3.fromRGB(12, 8, 14),
+		Card = Color3.fromRGB(18, 14, 20),
+		Input = Color3.fromRGB(11, 8, 13),
+		Active = Color3.fromRGB(55, 30, 12),
+		Stroke = Color3.fromRGB(48, 32, 18),
+		StrokeLight = Color3.fromRGB(120, 65, 25),
+		Text = Color3.fromRGB(255, 248, 240),
+		Muted = Color3.fromRGB(175, 155, 135),
+		Dim = Color3.fromRGB(120, 100, 85),
+		Dot = Color3.fromRGB(110, 70, 35),
 		Notes = {
-			Green = { Text = Color3.fromRGB(249, 115, 22), Bg = Color3.fromRGB(48, 28, 12) },
-			Yellow = { Text = Color3.fromRGB(251, 191, 36), Bg = Color3.fromRGB(54, 42, 12) },
-			Red = { Text = Color3.fromRGB(239, 68, 68), Bg = Color3.fromRGB(58, 22, 22) },
-			Gray = { Text = Color3.fromRGB(160, 145, 130), Bg = Color3.fromRGB(32, 28, 30) },
-			Blue = { Text = Color3.fromRGB(147, 130, 255), Bg = Color3.fromRGB(28, 22, 48) },
+			Green = { Text = Color3.fromRGB(255, 140, 40), Bg = Color3.fromRGB(50, 28, 10) },
+			Yellow = { Text = Color3.fromRGB(255, 200, 60), Bg = Color3.fromRGB(55, 40, 10) },
+			Red = { Text = Color3.fromRGB(255, 80, 70), Bg = Color3.fromRGB(55, 18, 18) },
+			Gray = { Text = Color3.fromRGB(170, 150, 135), Bg = Color3.fromRGB(30, 26, 28) },
+			Blue = { Text = Color3.fromRGB(160, 140, 255), Bg = Color3.fromRGB(26, 20, 50) },
 		},
 	},
 	Christmas = {
-		Accent = Color3.fromRGB(220, 38, 38),
-		Background = Color3.fromRGB(10, 14, 12),
-		Sidebar = Color3.fromRGB(12, 18, 15),
-		Card = Color3.fromRGB(18, 24, 20),
-		Input = Color3.fromRGB(12, 16, 14),
-		Active = Color3.fromRGB(28, 48, 32),
-		Stroke = Color3.fromRGB(30, 42, 34),
-		StrokeLight = Color3.fromRGB(60, 90, 70),
-		Text = Color3.fromRGB(245, 250, 245),
-		Muted = Color3.fromRGB(140, 160, 145),
-		Dim = Color3.fromRGB(95, 110, 100),
-		Dot = Color3.fromRGB(70, 100, 80),
+		Accent = Color3.fromRGB(230, 50, 50),
+		Background = Color3.fromRGB(6, 10, 12),
+		Sidebar = Color3.fromRGB(8, 14, 12),
+		Card = Color3.fromRGB(14, 20, 18),
+		Input = Color3.fromRGB(9, 13, 12),
+		Active = Color3.fromRGB(25, 55, 35),
+		Stroke = Color3.fromRGB(28, 45, 38),
+		StrokeLight = Color3.fromRGB(50, 110, 70),
+		Text = Color3.fromRGB(250, 252, 250),
+		Muted = Color3.fromRGB(150, 175, 160),
+		Dim = Color3.fromRGB(100, 120, 110),
+		Dot = Color3.fromRGB(60, 120, 80),
 		Notes = {
-			Green = { Text = Color3.fromRGB(34, 197, 94), Bg = Color3.fromRGB(16, 42, 28) },
-			Yellow = { Text = Color3.fromRGB(250, 204, 21), Bg = Color3.fromRGB(48, 40, 12) },
-			Red = { Text = Color3.fromRGB(248, 113, 113), Bg = Color3.fromRGB(52, 20, 20) },
-			Gray = { Text = Color3.fromRGB(150, 160, 155), Bg = Color3.fromRGB(30, 34, 32) },
-			Blue = { Text = Color3.fromRGB(125, 211, 252), Bg = Color3.fromRGB(18, 32, 48) },
+			Green = { Text = Color3.fromRGB(50, 220, 110), Bg = Color3.fromRGB(12, 48, 28) },
+			Yellow = { Text = Color3.fromRGB(255, 215, 50), Bg = Color3.fromRGB(50, 42, 10) },
+			Red = { Text = Color3.fromRGB(255, 90, 90), Bg = Color3.fromRGB(55, 18, 18) },
+			Gray = { Text = Color3.fromRGB(155, 170, 160), Bg = Color3.fromRGB(28, 32, 30) },
+			Blue = { Text = Color3.fromRGB(140, 220, 255), Bg = Color3.fromRGB(14, 30, 48) },
 		},
 	},
 }
@@ -826,35 +826,98 @@ local function makeNote(parent, text, colorKey)
 	return pill, lbl
 end
 
+-- High-quality seasonal decorations (procedural + curated assets)
 local SEASONAL_IMAGES = {
-	-- Halloween (public catalog decals; rbxthumb used for reliable UI loading)
+	-- Curated public assets (thumbnail endpoint for reliable UI load)
 	Bat = "rbxthumb://type=Asset&id=13915312936&w=150&h=150",
-	BatAlt = "rbxthumb://type=Asset&id=5758643056&w=150&h=150",
+	Moon = "rbxthumb://type=Asset&id=5758643056&w=150&h=150",
 	Pumpkin = "rbxthumb://type=Asset&id=5634829236&w=150&h=150",
-	PumpkinAlt = "rbxthumb://type=Asset&id=36517427&w=150&h=150",
-	Web = "rbxthumb://type=Asset&id=18912486432&w=150&h=150",
-	-- Christmas
+	Web = "rbxthumb://type=Asset&id=18912486432&w=420&h=420",
 	Snowflake = "rbxthumb://type=Asset&id=6034320993&w=150&h=150",
 	Tree = "rbxthumb://type=Asset&id=15171016920&w=150&h=150",
 	SantaHat = "rbxthumb://type=Asset&id=15224275868&w=150&h=150",
-	Gift = "rbxthumb://type=Asset&id=1952551&w=150&h=150",
-	Star = "rbxthumb://type=Asset&id=6034320993&w=150&h=150",
 }
 
-local function fxImage(parent, image, size, position, anchor, transparency, z, color)
-	local img = create("ImageLabel", {
+local function fxImg(parent, image, size, pos, anchor, trans, z, color, rot)
+	local s = typeof(size) == "number" and UDim2.fromOffset(size, size) or size
+	return create("ImageLabel", {
 		BackgroundTransparency = 1,
 		Image = image,
-		Size = typeof(size) == "UDim2" and size or UDim2.fromOffset(size, size),
-		Position = position or UDim2.new(),
+		Size = s,
+		Position = pos or UDim2.new(),
 		AnchorPoint = anchor or Vector2.new(0, 0),
-		ImageTransparency = transparency or 0.2,
+		ImageTransparency = trans or 0.15,
 		ImageColor3 = color or Color3.new(1, 1, 1),
+		Rotation = rot or 0,
 		ScaleType = Enum.ScaleType.Fit,
 		ZIndex = z or 1,
 		Parent = parent,
 	})
-	return img
+end
+
+local function softCircle(parent, size, pos, color, trans, z)
+	return create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = pos,
+		Size = UDim2.fromOffset(size, size),
+		BackgroundColor3 = color,
+		BackgroundTransparency = trans,
+		ZIndex = z or 0,
+		Parent = parent,
+	}, { corner(math.ceil(size / 2)) })
+end
+
+-- Simple bat silhouette built from frames (always works, no asset dependency)
+local function makeBatSilhouette(parent, size, pos, trans)
+	local holder = create("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(size, size * 0.55),
+		Position = pos,
+		ZIndex = 2,
+		Parent = parent,
+	})
+	local body = create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.55),
+		Size = UDim2.fromOffset(size * 0.28, size * 0.22),
+		BackgroundColor3 = Color3.fromRGB(18, 14, 20),
+		BackgroundTransparency = trans,
+		ZIndex = 3,
+		Parent = holder,
+	}, { corner(size * 0.12) })
+	-- left wing
+	local lw = create("Frame", {
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.fromScale(0.42, 0.45),
+		Size = UDim2.fromOffset(size * 0.42, size * 0.28),
+		BackgroundColor3 = Color3.fromRGB(18, 14, 20),
+		BackgroundTransparency = trans,
+		Rotation = -18,
+		ZIndex = 2,
+		Parent = holder,
+	}, { corner(4) })
+	-- right wing
+	local rw = create("Frame", {
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.fromScale(0.58, 0.45),
+		Size = UDim2.fromOffset(size * 0.42, size * 0.28),
+		BackgroundColor3 = Color3.fromRGB(18, 14, 20),
+		BackgroundTransparency = trans,
+		Rotation = 18,
+		ZIndex = 2,
+		Parent = holder,
+	}, { corner(4) })
+	-- head
+	create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.28),
+		Size = UDim2.fromOffset(size * 0.18, size * 0.16),
+		BackgroundColor3 = Color3.fromRGB(18, 14, 20),
+		BackgroundTransparency = trans,
+		ZIndex = 3,
+		Parent = holder,
+	}, { corner(size * 0.08) })
+	return holder, lw, rw
 end
 
 local function spawnHalloweenEffects(parent, connections)
@@ -867,119 +930,155 @@ local function spawnHalloweenEffects(parent, connections)
 		Parent = parent,
 	})
 
-	-- night vignette
+	-- deep night overlay
 	create("Frame", {
 		Size = UDim2.fromScale(1, 1),
-		BackgroundColor3 = Color3.fromRGB(6, 3, 10),
-		BackgroundTransparency = 0.78,
+		BackgroundColor3 = Color3.fromRGB(4, 2, 8),
+		BackgroundTransparency = 0.72,
 		ZIndex = 0,
 		Parent = layer,
 	})
 
-	-- soft orange ambient glows
-	for i = 1, 5 do
-		local orb = create("Frame", {
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(0.12 + i * 0.16, 0, 0.2 + (i % 3) * 0.22, 0),
-			Size = UDim2.fromOffset(100 + i * 12, 100 + i * 12),
-			BackgroundColor3 = Color3.fromRGB(249, 115, 22),
-			BackgroundTransparency = 0.94,
-			ZIndex = 0,
-			Parent = layer,
-		}, { corner(60) })
+	-- large ambient orange glows (screenshot-style atmosphere)
+	local glowSpots = {
+		{ 0.15, 0.2, 160, 0.93 }, { 0.45, 0.35, 200, 0.95 },
+		{ 0.75, 0.15, 140, 0.92 }, { 0.85, 0.7, 180, 0.94 },
+		{ 0.25, 0.75, 150, 0.93 }, { 0.55, 0.55, 120, 0.95 },
+	}
+	for i, g in ipairs(glowSpots) do
+		local orb = softCircle(layer, g[3], UDim2.new(g[1], 0, g[2], 0), Color3.fromRGB(255, 120, 30), g[4], 0)
 		task.spawn(function()
-			local phase = i * 0.85
+			local phase = i * 0.9
 			while orb.Parent do
 				local t = os.clock() + phase
-				orb.BackgroundTransparency = 0.92 + math.sin(t * 0.55) * 0.035
+				orb.BackgroundTransparency = g[4] - 0.02 + math.sin(t * 0.5) * 0.025
 				task.wait(0.1)
 			end
 		end)
 	end
 
-	-- moon (procedural for clean soft look)
-	local moon = create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.new(0.78, 0, 0.11, 0),
-		Size = UDim2.fromOffset(64, 64),
-		BackgroundColor3 = Color3.fromRGB(245, 240, 220),
-		BackgroundTransparency = 0.08,
-		ZIndex = 1,
-		Parent = layer,
-	}, { corner(32) })
+	-- bright moon with glow
+	local moonGlow = softCircle(layer, 110, UDim2.new(0.82, 0, 0.1, 0), Color3.fromRGB(255, 230, 180), 0.88, 0)
+	local moon = softCircle(layer, 70, UDim2.new(0.82, 0, 0.1, 0), Color3.fromRGB(255, 250, 230), 0.05, 1)
+	-- crater / crescent cut
 	create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.new(0.68, 0, 0.36, 0),
-		Size = UDim2.fromOffset(46, 46),
-		BackgroundColor3 = Color3.fromRGB(12, 10, 14),
-		BackgroundTransparency = 0.25,
+		Position = UDim2.new(0.855, 0, 0.085, 0),
+		Size = UDim2.fromOffset(48, 48),
+		BackgroundColor3 = Color3.fromRGB(8, 6, 10),
+		BackgroundTransparency = 0.35,
 		ZIndex = 2,
-		Parent = moon,
-	}, { corner(23) })
-	-- moon glow ring
-	create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(90, 90),
-		BackgroundColor3 = Color3.fromRGB(255, 220, 160),
-		BackgroundTransparency = 0.92,
-		ZIndex = 0,
-		Parent = moon,
-	}, { corner(45) })
+		Parent = layer,
+	}, { corner(24) })
+	task.spawn(function()
+		while moonGlow.Parent do
+			local t = os.clock()
+			moonGlow.BackgroundTransparency = 0.86 + math.sin(t * 0.4) * 0.03
+			task.wait(0.12)
+		end
+	end)
 
-	-- flying bats (real images)
-	local batPositions = {
-		{ 0.06, 0.07, 28 }, { 0.18, 0.03, 22 }, { 0.32, 0.09, 26 },
-		{ 0.48, 0.02, 20 }, { 0.62, 0.06, 30 }, { 0.88, 0.04, 24 },
-		{ 0.12, 0.16, 18 }, { 0.94, 0.14, 22 }, { 0.55, 0.12, 16 },
-		{ 0.72, 0.18, 20 }, { 0.28, 0.15, 18 },
+	-- dense bat flock (procedural silhouettes — always visible)
+	local batData = {
+		{ 0.05, 0.06, 34 }, { 0.14, 0.03, 26 }, { 0.24, 0.08, 30 },
+		{ 0.36, 0.02, 22 }, { 0.48, 0.07, 36 }, { 0.58, 0.04, 24 },
+		{ 0.68, 0.09, 28 }, { 0.9, 0.05, 32 }, { 0.1, 0.15, 20 },
+		{ 0.3, 0.14, 18 }, { 0.52, 0.16, 22 }, { 0.75, 0.13, 26 },
+		{ 0.92, 0.18, 20 }, { 0.42, 0.11, 16 }, { 0.18, 0.2, 18 },
 	}
-	for i, pos in ipairs(batPositions) do
-		local img = (i % 2 == 0) and SEASONAL_IMAGES.Bat or SEASONAL_IMAGES.BatAlt
-		local bat = fxImage(layer, img, pos[3], UDim2.new(pos[1], 0, pos[2], 0), nil, 0.18 + (i % 3) * 0.05, 2, Color3.fromRGB(30, 25, 35))
+	for i, b in ipairs(batData) do
+		local holder, lw, rw = makeBatSilhouette(layer, b[3], UDim2.new(b[1], 0, b[2], 0), 0.12 + (i % 4) * 0.04)
 		task.spawn(function()
-			local baseY, baseX = pos[2], pos[1]
-			local phase = i * 0.65
-			local speed = 0.28 + (i % 4) * 0.08
-			while bat.Parent do
+			local bx, by = b[1], b[2]
+			local phase = i * 0.55
+			local speed = 0.35 + (i % 5) * 0.07
+			while holder.Parent do
 				local t = os.clock() + phase
-				bat.Position = UDim2.new(baseX + math.sin(t * speed) * 0.025, 0, baseY + math.sin(t * (speed + 0.2)) * 0.014, 0)
-				bat.Rotation = math.sin(t * 0.95) * 12
-				task.wait(0.04)
+				holder.Position = UDim2.new(bx + math.sin(t * speed) * 0.03, 0, by + math.sin(t * (speed + 0.15)) * 0.018, 0)
+				holder.Rotation = math.sin(t * 1.1) * 10
+				-- wing flap
+				if lw and rw then
+					lw.Rotation = -18 + math.sin(t * 4.5) * 14
+					rw.Rotation = 18 - math.sin(t * 4.5) * 14
+				end
+				task.wait(0.033)
 			end
 		end)
 	end
 
-	-- spider webs in corners (image + soft procedural fallback ring)
-	local webSpots = {
-		{ Vector2.new(0, 0), UDim2.fromOffset(-4, -4), -8, 110 },
-		{ Vector2.new(1, 0), UDim2.new(1, 4, 0, -2), 14, 100 },
-		{ Vector2.new(0, 1), UDim2.new(0, -6, 1, 2), 20, 95 },
-	}
-	for _, w in ipairs(webSpots) do
-		local web = fxImage(layer, SEASONAL_IMAGES.Web, w[4], w[2], w[1], 0.55, 1, Color3.fromRGB(200, 190, 180))
-		web.Rotation = w[3]
+	-- corner spider webs (image + radial line fallback)
+	local function addWeb(anchor, pos, rot, size)
+		local web = fxImg(layer, SEASONAL_IMAGES.Web, size, pos, anchor, 0.5, 1, Color3.fromRGB(210, 200, 190), rot)
+		-- extra radial threads for density if image is sparse
+		local threads = create("Frame", {
+			BackgroundTransparency = 1,
+			Size = UDim2.fromOffset(size * 0.7, size * 0.7),
+			AnchorPoint = anchor,
+			Position = pos,
+			Rotation = rot,
+			ZIndex = 1,
+			Parent = layer,
+		})
+		for a = 0, 5 do
+			local ang = a * 30 - 15
+			create("Frame", {
+				AnchorPoint = Vector2.new(0, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.new(0.48, 0, 0, 1),
+				BackgroundColor3 = Color3.fromRGB(180, 170, 160),
+				BackgroundTransparency = 0.7,
+				Rotation = ang,
+				ZIndex = 1,
+				Parent = threads,
+			})
+		end
+		return web
 	end
+	addWeb(Vector2.new(0, 0), UDim2.fromOffset(-8, -8), -10, 130)
+	addWeb(Vector2.new(1, 0), UDim2.new(1, 8, 0, -6), 12, 120)
+	addWeb(Vector2.new(0, 1), UDim2.new(0, -10, 1, 6), 18, 110)
 
-	-- pumpkins along lower left (sidebar area)
+	-- glowing jack-o-lanterns bottom-left
 	for i = 1, 4 do
-		local pk = fxImage(
-			layer,
-			(i % 2 == 0) and SEASONAL_IMAGES.Pumpkin or SEASONAL_IMAGES.PumpkinAlt,
-			22 + i * 4,
-			UDim2.new(0.015 + (i - 1) * 0.055, 0, 0.86 + (i % 2) * 0.02, 0),
-			nil,
-			0.12,
-			2,
-			Color3.fromRGB(255, 200, 120)
-		)
+		local px = 0.02 + (i - 1) * 0.06
+		local py = 0.87 + (i % 2) * 0.025
+		local glow = softCircle(layer, 36 + i * 4, UDim2.new(px + 0.02, 0, py + 0.02, 0), Color3.fromRGB(255, 140, 30), 0.75, 1)
+		local pk = fxImg(layer, SEASONAL_IMAGES.Pumpkin, 26 + i * 5, UDim2.new(px, 0, py, 0), nil, 0.05, 3, Color3.fromRGB(255, 200, 100))
 		task.spawn(function()
-			local phase = i * 1.15
+			local phase = i * 1.3
 			while pk.Parent do
 				local t = os.clock() + phase
-				pk.Rotation = math.sin(t * 0.7) * 5
-				pk.ImageTransparency = 0.1 + math.sin(t * 0.5) * 0.04
-				task.wait(0.08)
+				pk.Rotation = math.sin(t * 0.6) * 6
+				glow.BackgroundTransparency = 0.7 + math.sin(t * 1.2) * 0.08
+				task.wait(0.06)
+			end
+		end)
+	end
+
+	-- floating orange ember particles
+	for i = 1, 14 do
+		local ember = softCircle(
+			layer,
+			3 + math.random(0, 4),
+			UDim2.new(math.random() * 0.9 + 0.05, 0, math.random() * 0.7 + 0.15, 0),
+			Color3.fromRGB(255, 150 + math.random(0, 60), 40),
+			0.25 + math.random() * 0.35,
+			2
+		)
+		task.spawn(function()
+			local x = ember.Position.X.Scale
+			local y = ember.Position.Y.Scale
+			local phase = math.random() * 8
+			while ember.Parent do
+				local t = os.clock() + phase
+				y = y - 0.004
+				if y < -0.05 then
+					y = 0.95
+					x = math.random() * 0.9 + 0.05
+				end
+				ember.Position = UDim2.new(x + math.sin(t * 0.8) * 0.012, 0, y, 0)
+				ember.BackgroundTransparency = 0.2 + math.abs(math.sin(t * 2)) * 0.4
+				task.wait(0.05)
 			end
 		end)
 	end
@@ -997,113 +1096,160 @@ local function spawnChristmasEffects(parent, connections)
 		Parent = parent,
 	})
 
-	-- cool night vignette
+	-- cool winter overlay
 	create("Frame", {
 		Size = UDim2.fromScale(1, 1),
-		BackgroundColor3 = Color3.fromRGB(4, 10, 8),
-		BackgroundTransparency = 0.82,
+		BackgroundColor3 = Color3.fromRGB(2, 8, 12),
+		BackgroundTransparency = 0.78,
 		ZIndex = 0,
 		Parent = layer,
 	})
 
-	-- soft festive glows
-	local glowColors = {
-		Color3.fromRGB(220, 38, 38),
-		Color3.fromRGB(34, 197, 94),
-		Color3.fromRGB(250, 204, 21),
-		Color3.fromRGB(34, 197, 94),
-		Color3.fromRGB(220, 38, 38),
+	-- festive colored glows
+	local glows = {
+		{ 0.12, 0.2, Color3.fromRGB(230, 40, 40), 160 },
+		{ 0.4, 0.4, Color3.fromRGB(30, 180, 80), 180 },
+		{ 0.7, 0.18, Color3.fromRGB(255, 200, 40), 140 },
+		{ 0.88, 0.65, Color3.fromRGB(230, 40, 40), 150 },
+		{ 0.25, 0.72, Color3.fromRGB(30, 180, 80), 130 },
 	}
-	for i = 1, 5 do
-		local orb = create("Frame", {
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(0.1 + i * 0.16, 0, 0.25 + (i % 2) * 0.28, 0),
-			Size = UDim2.fromOffset(95, 95),
-			BackgroundColor3 = glowColors[i],
-			BackgroundTransparency = 0.945,
-			ZIndex = 0,
-			Parent = layer,
-		}, { corner(48) })
+	for i, g in ipairs(glows) do
+		local orb = softCircle(layer, g[4], UDim2.new(g[1], 0, g[2], 0), g[3], 0.93, 0)
 		task.spawn(function()
-			local phase = i * 0.75
+			local phase = i * 0.8
 			while orb.Parent do
 				local t = os.clock() + phase
-				orb.BackgroundTransparency = 0.93 + math.sin(t * 0.5) * 0.03
-				task.wait(0.12)
+				orb.BackgroundTransparency = 0.91 + math.sin(t * 0.55) * 0.03
+				task.wait(0.1)
 			end
 		end)
 	end
 
-	-- falling snow particles (soft white circles — clean, professional)
-	for i = 1, 36 do
-		local size = 3 + math.random(0, 5)
-		local flake = create("Frame", {
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(math.random() * 1.1 - 0.05, 0, -0.12 - math.random() * 0.4, 0),
-			Size = UDim2.fromOffset(size, size),
-			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-			BackgroundTransparency = 0.15 + math.random() * 0.45,
-			ZIndex = 2,
-			Parent = layer,
-		}, { corner(math.ceil(size / 2)) })
-		-- occasional image snowflake for variety
-		if i % 7 == 0 then
-			local img = fxImage(layer, SEASONAL_IMAGES.Snowflake, 12 + math.random(0, 8), flake.Position, Vector2.new(0.5, 0.5), 0.25, 2)
-			task.spawn(function()
-				local x = img.Position.X.Scale
-				local speed = 0.035 + math.random() * 0.07
-				local sway = 0.25 + math.random() * 0.45
-				local phase = math.random() * 12
-				while img.Parent do
-					local t = os.clock() + phase
-					local y = img.Position.Y.Scale + speed * 0.016
-					if y > 1.12 then
-						y = -0.08
-						x = math.random() * 1.1 - 0.05
-					end
-					img.Position = UDim2.new(x + math.sin(t * sway) * 0.01, 0, y, 0)
-					img.Rotation = t * 18
-					task.wait(0.04)
-				end
-			end)
+	-- string lights along top edge
+	local lightColors = {
+		Color3.fromRGB(255, 60, 60),
+		Color3.fromRGB(50, 220, 90),
+		Color3.fromRGB(255, 210, 40),
+		Color3.fromRGB(80, 180, 255),
+		Color3.fromRGB(255, 120, 200),
+	}
+	for i = 1, 22 do
+		local c = lightColors[((i - 1) % #lightColors) + 1]
+		local bulb = softCircle(layer, 7, UDim2.new(0.04 + (i - 1) * 0.043, 0, 0.02 + math.sin(i * 0.7) * 0.008, 0), c, 0.15, 3)
+		local halo = softCircle(layer, 16, bulb.Position, c, 0.85, 2)
+		halo.AnchorPoint = Vector2.new(0.5, 0.5)
+		task.spawn(function()
+			local phase = i * 0.35
+			while bulb.Parent do
+				local t = os.clock() + phase
+				local pulse = 0.08 + math.abs(math.sin(t * 2.2)) * 0.25
+				bulb.BackgroundTransparency = pulse
+				halo.BackgroundTransparency = 0.78 + pulse * 0.15
+				task.wait(0.08)
+			end
+		end)
+	end
+	-- light wire
+	create("Frame", {
+		Position = UDim2.new(0.03, 0, 0.018, 0),
+		Size = UDim2.new(0.94, 0, 0, 1),
+		BackgroundColor3 = Color3.fromRGB(60, 50, 40),
+		BackgroundTransparency = 0.55,
+		ZIndex = 1,
+		Parent = layer,
+	})
+
+	-- dense falling snow
+	for i = 1, 48 do
+		local sz = 2 + math.random(0, 6)
+		local isBig = i % 6 == 0
+		local flake
+		if isBig then
+			flake = fxImg(
+				layer,
+				SEASONAL_IMAGES.Snowflake,
+				10 + math.random(0, 10),
+				UDim2.new(math.random() * 1.05 - 0.02, 0, -0.15 - math.random() * 0.5, 0),
+				Vector2.new(0.5, 0.5),
+				0.15 + math.random() * 0.35,
+				2,
+				Color3.fromRGB(255, 255, 255)
+			)
+		else
+			flake = softCircle(
+				layer,
+				sz,
+				UDim2.new(math.random() * 1.05 - 0.02, 0, -0.15 - math.random() * 0.5, 0),
+				Color3.fromRGB(255, 255, 255),
+				0.1 + math.random() * 0.4,
+				2
+			)
 		end
 		task.spawn(function()
 			local x = flake.Position.X.Scale
-			local speed = 0.03 + math.random() * 0.08
-			local sway = 0.3 + math.random() * 0.5
-			local phase = math.random() * 10
+			local speed = 0.028 + math.random() * 0.075
+			local sway = 0.25 + math.random() * 0.55
+			local phase = math.random() * 14
 			while flake.Parent do
 				local t = os.clock() + phase
 				local y = flake.Position.Y.Scale + speed * 0.016
-				if y > 1.12 then
-					y = -0.08
-					x = math.random() * 1.1 - 0.05
+				if y > 1.15 then
+					y = -0.1
+					x = math.random() * 1.05 - 0.02
 				end
-				flake.Position = UDim2.new(x + math.sin(t * sway) * 0.01, 0, y, 0)
-				task.wait(0.04)
+				flake.Position = UDim2.new(x + math.sin(t * sway) * 0.012, 0, y, 0)
+				if isBig then
+					flake.Rotation = t * 22
+				end
+				task.wait(0.033)
 			end
 		end)
 	end
 
-	-- corner decorations: santa hats, trees, gifts (real images)
+	-- santa hats, trees, gifts in corners (larger, more present)
 	local decos = {
-		{ SEASONAL_IMAGES.SantaHat, 0.03, 0.04, 36, Color3.fromRGB(255, 255, 255) },
-		{ SEASONAL_IMAGES.Tree, 0.1, 0.02, 32, Color3.fromRGB(200, 255, 200) },
-		{ SEASONAL_IMAGES.Snowflake, 0.8, 0.03, 22, Color3.fromRGB(255, 255, 255) },
-		{ SEASONAL_IMAGES.Gift, 0.9, 0.06, 30, Color3.fromRGB(255, 220, 220) },
-		{ SEASONAL_IMAGES.Tree, 0.88, 0.86, 34, Color3.fromRGB(180, 255, 180) },
-		{ SEASONAL_IMAGES.SantaHat, 0.04, 0.88, 34, Color3.fromRGB(255, 255, 255) },
-		{ SEASONAL_IMAGES.Star, 0.5, 0.015, 18, Color3.fromRGB(255, 230, 150) },
+		{ SEASONAL_IMAGES.SantaHat, 0.02, 0.04, 42, Color3.fromRGB(255, 255, 255), -8 },
+		{ SEASONAL_IMAGES.Tree, 0.09, 0.015, 38, Color3.fromRGB(180, 255, 180), 5 },
+		{ SEASONAL_IMAGES.Snowflake, 0.78, 0.025, 26, Color3.fromRGB(255, 255, 255), 0 },
+		{ SEASONAL_IMAGES.Tree, 0.88, 0.02, 36, Color3.fromRGB(160, 255, 160), -5 },
+		{ SEASONAL_IMAGES.SantaHat, 0.02, 0.86, 40, Color3.fromRGB(255, 255, 255), 8 },
+		{ SEASONAL_IMAGES.Tree, 0.9, 0.85, 40, Color3.fromRGB(170, 255, 170), -6 },
+		{ SEASONAL_IMAGES.SantaHat, 0.92, 0.08, 34, Color3.fromRGB(255, 255, 255), 12 },
 	}
 	for i, d in ipairs(decos) do
-		local el = fxImage(layer, d[1], d[4], UDim2.new(d[2], 0, d[3], 0), nil, 0.08, 2, d[5])
+		local el = fxImg(layer, d[1], d[4], UDim2.new(d[2], 0, d[3], 0), nil, 0.05, 3, d[5], d[6])
+		-- soft glow under decoration
+		softCircle(layer, d[4] + 10, UDim2.new(d[2] + 0.015, 0, d[3] + 0.02, 0), Color3.fromRGB(255, 200, 150), 0.9, 1)
 		task.spawn(function()
-			local phase = i * 1.05
+			local phase = i * 0.9
 			while el.Parent do
 				local t = os.clock() + phase
-				el.Rotation = math.sin(t * 0.65) * 8
-				el.ImageTransparency = 0.05 + math.sin(t * 0.4) * 0.04
-				task.wait(0.08)
+				el.Rotation = d[6] + math.sin(t * 0.7) * 7
+				el.ImageTransparency = 0.03 + math.sin(t * 0.45) * 0.04
+				task.wait(0.07)
+			end
+		end)
+	end
+
+	-- floating gift sparkles
+	for i = 1, 12 do
+		local sp = softCircle(
+			layer,
+			3 + math.random(0, 3),
+			UDim2.new(math.random() * 0.9 + 0.05, 0, math.random() * 0.6 + 0.2, 0),
+			lightColors[((i - 1) % #lightColors) + 1],
+			0.3,
+			2
+		)
+		task.spawn(function()
+			local x = sp.Position.X.Scale
+			local y = sp.Position.Y.Scale
+			local phase = math.random() * 6
+			while sp.Parent do
+				local t = os.clock() + phase
+				sp.Position = UDim2.new(x + math.sin(t * 0.6) * 0.02, 0, y + math.cos(t * 0.5) * 0.015, 0)
+				sp.BackgroundTransparency = 0.2 + math.abs(math.sin(t * 2.5)) * 0.5
+				task.wait(0.06)
 			end
 		end)
 	end
@@ -1213,26 +1359,35 @@ function Library:CreateWindow(opts)
 		Bg = "Card",
 		Parent = sbHeader,
 	}, { corner(10), stroke("Stroke") })
-	local seasonalLogoIcon = nil
-	if opts.LogoIcon == nil and opts.Logo == nil then
+	local logoText = opts.Logo or "R"
+	if opts.Logo == nil and opts.LogoIcon == nil then
 		if self.Season == "Halloween" then
-			seasonalLogoIcon = SEASONAL_IMAGES.Pumpkin
+			logoText = "R"
 		elseif self.Season == "Christmas" then
-			seasonalLogoIcon = SEASONAL_IMAGES.Tree
+			logoText = "R"
 		end
 	end
-	local logoIconArg = opts.LogoIcon or seasonalLogoIcon
 	self.LogoText = newLabel({
 		Size = UDim2.fromScale(1, 1),
-		Text = opts.Logo or "R",
+		Text = logoText,
 		Font = FONT_BOLD,
 		TextSize = 18,
 		TextXAlignment = Enum.TextXAlignment.Center,
 		Parent = logoBox,
 	})
-	self.LogoIcon = newIcon(logoBox, logoIconArg, 22, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5), "Text")
-	self.LogoIcon:SetShown(logoIconArg ~= nil)
-	self.LogoText.Visible = logoIconArg == nil
+	self.LogoIcon = newIcon(logoBox, opts.LogoIcon, 22, UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5), "Text")
+	self.LogoIcon:SetShown(opts.LogoIcon ~= nil)
+	self.LogoText.Visible = opts.LogoIcon == nil
+	-- seasonal logo box tint
+	if self.Season == "Halloween" then
+		bind(logoBox, function()
+			logoBox.BackgroundColor3 = Theme.Accent:Lerp(Theme.Card, 0.55)
+		end)
+	elseif self.Season == "Christmas" then
+		bind(logoBox, function()
+			logoBox.BackgroundColor3 = Theme.Accent:Lerp(Theme.Card, 0.6)
+		end)
+	end
 	self.SidebarTitle = newLabel({
 		Position = UDim2.fromOffset(68, 0),
 		Size = UDim2.new(1, -88, 1, 0),
