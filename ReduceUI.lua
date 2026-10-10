@@ -4489,7 +4489,7 @@ end
 --                  :SetItems(entries) :Select(id,silent) :GetSelected() :Clear() :SetCount(text)
 --                  :SetEmptyText(text) :Count() :ScrollToTop()
 --                  Rows are diffed by Id, so refreshing keeps scroll position and never flickers.
---   AddCodeBlock   {Title, Height=160, Wrap=true, MaxChars=12000, Placeholder, Copy=true,
+--   AddCodeBlock   {Title, Height=160, Wrap=true, PageSize=12000 (long text is paged with ‹ ›), Placeholder, Copy=true,
 --                   WrapToggle=true, Buttons={{Text, Callback}}, OnCopy}
 --                  :Set(text) :Get() :Append(text) :Clear()
 --   AddStats       {Items={{Id, Name, Value, Note, NoteColor, Icon}}, Height=78}
@@ -5030,11 +5030,12 @@ do
 		local scroll = create("ScrollingFrame", {
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
-			ScrollBarThickness = 4,
+			ScrollBarThickness = 6,
 			Sc = "StrokeLight",
 			CanvasSize = UDim2.new(),
 			AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			ScrollingDirection = Enum.ScrollingDirection.Y,
+			ElasticBehavior = Enum.ElasticBehavior.Never,
 			Parent = frame,
 		}, { padding(10, 8, 10, 8) })
 		local box = create("TextBox", {
@@ -5099,28 +5100,99 @@ do
 			end)
 		end
 
-		local function show()
-			local s = sanitize(full)
-			if #s > maxChars then
-				s = s:sub(1, maxChars)
-					.. "\n... ["
-					.. (#full - maxChars)
-					.. " more characters - use Copy for the full text]"
+		-- long text is split into pages (on line boundaries) so huge scripts stay smooth;
+		-- each page scrolls normally, and the full text is always available through Copy / Get
+		local pageSize = math.max(2000, opts.PageSize or opts.MaxChars or 12000)
+		local pages, page = { "" }, 1
+		local prevBtn = smallButton(hdrRight, "‹", -3)
+		local pageLbl = newLabel({
+			Size = UDim2.new(0, 0, 0, 22),
+			AutomaticSize = Enum.AutomaticSize.X,
+			Text = "",
+			Font = FONT_MED,
+			TextSize = 10,
+			Tc = "Muted",
+			TextXAlignment = Enum.TextXAlignment.Center,
+			LayoutOrder = -2,
+			Parent = hdrRight,
+		}, { padding(4, 0, 4, 0) })
+		local nextBtn = smallButton(hdrRight, "›", -1)
+
+		local function paginate(text)
+			local out, cur, n = {}, {}, 0
+			for line in (text .. "\n"):gmatch("(.-)\n") do
+				while #line > pageSize do
+					if n > 0 then
+						out[#out + 1] = table.concat(cur, "\n")
+						cur, n = {}, 0
+					end
+					out[#out + 1] = line:sub(1, pageSize)
+					line = line:sub(pageSize + 1)
+				end
+				if n > 0 and n + #line + 1 > pageSize then
+					out[#out + 1] = table.concat(cur, "\n")
+					cur, n = {}, 0
+				end
+				cur[#cur + 1] = line
+				n = n + #line + 1
 			end
-			box.Text = s
+			if #cur > 0 or #out == 0 then
+				out[#out + 1] = table.concat(cur, "\n")
+			end
+			return out
+		end
+
+		local function render(toBottom)
+			page = math.clamp(page, 1, #pages)
+			box.Text = pages[page]
+			local multi = #pages > 1
+			prevBtn.Visible, nextBtn.Visible, pageLbl.Visible = multi, multi, multi
+			if multi then
+				pageLbl.Text = string.format("%d / %d", page, #pages)
+				prevBtn.TextTransparency = page == 1 and 0.6 or 0
+				nextBtn.TextTransparency = page == #pages and 0.6 or 0
+			end
+			scroll.CanvasPosition = Vector2.new(0, toBottom and 1e6 or 0)
+		end
+		local function go(delta)
+			local np = math.clamp(page + delta, 1, #pages)
+			if np ~= page then
+				page = np
+				render(delta < 0)
+			end
+		end
+		prevBtn.MouseButton1Click:Connect(function()
+			go(-1)
+		end)
+		nextBtn.MouseButton1Click:Connect(function()
+			go(1)
+		end)
+
+		local function rebuild(toBottom)
+			pages = paginate(sanitize(full))
+			if toBottom then
+				page = #pages
+			end
+			render(toBottom)
 		end
 		function item.Set(text)
 			full = tostring(text == nil and "" or text)
-			show()
-			scroll.CanvasPosition = Vector2.new(0, 0)
+			page = 1
+			rebuild(false)
 		end
 		function item.Get()
 			return full
 		end
 		function item.Append(text)
 			full = full .. tostring(text or "")
-			show()
-			scroll.CanvasPosition = Vector2.new(0, 1e6)
+			rebuild(true)
+		end
+		function item.SetPage(n)
+			page = tonumber(n) or 1
+			render(false)
+		end
+		function item.GetPages()
+			return #pages
 		end
 		function item.Clear()
 			item.Set("")
