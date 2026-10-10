@@ -6069,8 +6069,10 @@ end
 --                      Decor (bool, default true)   hats, garland, ornaments, cobwebs, slime...
 --                      Intensity (number, 1)        particle count multiplier
 --                      Screen (bool, false)         particles fall over the whole screen
---                      Style ("Clean" | "Festive")  Clean = refined and subtle (default);
---                                                   Festive = hats, ornaments, tombstones... everywhere
+--                      Style ("Subtle" | "Classic" | "Festive")
+--                                                   Subtle  = refined, minimal
+--                                                   Classic = rich decorations (default)
+--                                                   Festive = absolutely everything, everywhere
 --
 -- Every glyph is editable and may be an emoji/text OR an "rbxassetid://" image:
 --   Library.Seasons.Christmas.Glyphs.Tree = "rbxassetid://123"
@@ -6467,7 +6469,9 @@ do
 				Parent = holder,
 			}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
 		end
-		santaHat(holder, 24, UDim2.new(1, -40, 0, -16), 16, 5)
+		if win.SeasonCfg and win.SeasonCfg.Max then
+			santaHat(holder, 24, UDim2.new(1, -40, 0, -16), 16, 5)
+		end
 	end
 
 	local function buildChristmas(win, cfg, S, layers)
@@ -6659,7 +6663,7 @@ do
 
 		if cfg.Effects then
 			-- three depth layers of snow (small/slow/faint -> big/fast/bright)
-			local n = math.floor((full and 54 or 42) * cfg.Intensity)
+			local n = math.floor((cfg.Max and 72 or full and 54 or 42) * cfg.Intensity)
 			local flakes = {}
 			for i = 1, n do
 				local depth = (i % 3) + 1
@@ -6703,7 +6707,7 @@ do
 				sp.Visible = false
 				sparks[i] = sp
 			end
-			local sl = { on = false, x = -0.1, y = 0.2, next = full and rand(8, 16) or 1e9 }
+			local sl = { on = false, x = -0.1, y = 0.2, next = cfg.Max and rand(8, 16) or 1e9 }
 			addUpdater(win, function(dt, t)
 				for _, f in ipairs(flakes) do
 					f.y = f.y + f.vy * dt
@@ -6769,7 +6773,7 @@ do
 			return
 		end
 		-- little slime drips off the top edge
-		for i = 1, 3 do
+		for i = 1, (win.SeasonCfg and win.SeasonCfg.Max) and 3 or 0 do
 			round(holder, {
 				Position = UDim2.new(rand(0.08, 0.7), 0, 0, -3),
 				Size = UDim2.fromOffset(math.random(5, 8), math.random(8, 16)),
@@ -7016,12 +7020,12 @@ do
 				embers[i] = { o = o, x = math.random(), y = math.random(), vy = -rand(0.04, 0.13), ph = rand(0, TAU), amp = rand(0.004, 0.016) }
 			end
 			local bats = {}
-			for i = 1, math.max(2, math.floor((full and 6 or 3) * cfg.Intensity)) do
+			for i = 1, math.max(2, math.floor((cfg.Max and 9 or full and 5 or 3) * cfg.Intensity)) do
 				local o = track(win, glyph(fx, g.Bat, math.random(16, 28), { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 61 }))
 				bats[i] = { o = o, x = rand(-0.2, 1.1), y = rand(0.08, 0.7), vx = rand(0.06, 0.18), ph = rand(0, TAU) }
 			end
 			local ghosts = {}
-			for i = 1, math.max(1, math.floor((full and 3 or 1) * cfg.Intensity)) do
+			for i = 1, math.max(1, math.floor((cfg.Max and 4 or full and 2 or 1) * cfg.Intensity)) do
 				local o = track(win, glyph(fx, g.Ghost, math.random(24, 36), { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 59 }))
 				ghosts[i] = { o = o, x = rand(0.1, 0.9), y = rand(0.2, 1.1), vy = -rand(0.015, 0.04), ph = rand(0, TAU) }
 			end
@@ -7059,14 +7063,17 @@ do
 
 	-- ---- public API ----------------------------------------------------------
 	local function normalizeCfg(cfg)
-		local out = { Theme = true, Effects = true, Decor = true, Intensity = 1, Screen = false, Style = "Clean" }
+		local out = { Theme = true, Effects = true, Decor = true, Intensity = 1, Screen = false, Style = "Classic" }
 		if type(cfg) == "table" then
 			for k, v in pairs(cfg) do
 				out[k] = v
 			end
 		end
 		out.Intensity = math.clamp(tonumber(out.Intensity) or 1, 0.1, 4)
-		out.Full = tostring(out.Style):lower() == "festive"
+		local lv = ({ subtle = 1, clean = 1, classic = 2, festive = 3 })[tostring(out.Style):lower()] or 2
+		out.Level = lv
+		out.Full = lv >= 2 -- rich decorations (garland, ornaments, hats, tombstones...)
+		out.Max = lv >= 3 -- everything: hats on every icon, card slime, sleigh, extra particles
 		return out
 	end
 
@@ -7077,7 +7084,7 @@ do
 			return
 		end
 		pcall(function()
-			if name == "Christmas" and self.SeasonCfg.Full and page.NavButton and not page.SeasonHat then
+			if name == "Christmas" and self.SeasonCfg.Max and page.NavButton and not page.SeasonHat then
 				page.SeasonHat = santaHat(page.NavButton, 14, UDim2.fromOffset(8, 1), -20, 6)
 				track(self, page.SeasonHat)
 			end
