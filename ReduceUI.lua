@@ -4505,7 +4505,7 @@ end
 --                  :Set(text, silent) :Get() :Append(text)
 --------------------------------------------------------------------------------
 
-Library.Version = "2.2.0"
+Library.Version = "2.3.0"
 Library.Features = {
 	List = true,
 	CodeBlock = true,
@@ -5947,8 +5947,14 @@ end
 
 
 -- ============================================================================
--- Seasonal modes (2.2): Halloween + Christmas. Opt-in by the script owner only.
+-- Themes + Seasonal modes (2.3)
 --
+--   Library:GetPresets()                    -> sorted list of theme names
+--   Library:AddPreset(name, { Accent=..., Background=..., ... })
+--   Library:SetTheme("Midnight")            -- Default Midnight Crimson Forest Sunset Mocha
+--                                           -- Nord Dracula Cyber Rose Violet Amber Ocean
+--
+--   Seasonal modes are opt-in by the script owner only:
 --   Library:CreateWindow({ ..., Halloween = true })
 --   Library:CreateWindow({ ..., Christmas = true })
 --   Library:CreateWindow({ ..., Christmas = { Intensity = 1.5, Screen = true } })
@@ -5957,8 +5963,8 @@ end
 --   Window:GetSeason()
 --
 -- cfg (all optional):  Theme (bool, default true)   apply the season colour preset
---                      Effects (bool, default true) falling snow / bats / ghosts / glow
---                      Decor (bool, default true)   hats, garland, cobwebs, slime...
+--                      Effects (bool, default true) snow / bats / ghosts / lightning / glow
+--                      Decor (bool, default true)   hats, garland, ornaments, cobwebs, slime...
 --                      Intensity (number, 1)        particle count multiplier
 --                      Screen (bool, false)         particles fall over the whole screen
 --
@@ -5970,50 +5976,111 @@ do
 	local Seasons = {}
 	Library.Seasons = Seasons
 	Library.Features.Seasons = true
+	Library.Features.Presets = true
 
 	local function C(r, g, b)
 		return Color3.fromRGB(r, g, b)
 	end
 
-	Library.Presets.Halloween = {
+	-- ---- theme presets -------------------------------------------------------
+	-- Build a complete, coherent palette from an accent and a background tint.
+	local WHITE, BLACK = Color3.new(1, 1, 1), Color3.new(0, 0, 0)
+	local function palette(accent, bg, textTint)
+		local text = (textTint or WHITE):Lerp(WHITE, 0.82)
+		return {
+			Accent = accent,
+			Background = bg,
+			Sidebar = bg:Lerp(WHITE, 0.022),
+			Card = bg:Lerp(WHITE, 0.045),
+			Input = bg:Lerp(BLACK, 0.28),
+			Active = bg:Lerp(accent, 0.2),
+			Stroke = bg:Lerp(WHITE, 0.11),
+			StrokeLight = bg:Lerp(accent, 0.42),
+			Text = text,
+			Muted = bg:Lerp(text, 0.62),
+			Dim = bg:Lerp(text, 0.38),
+			Dot = bg:Lerp(accent, 0.55),
+		}
+	end
+
+	local P = Library.Presets
+	P.Default = {}
+	P.Ocean = palette(C(56, 189, 248), C(14, 20, 29))
+	P.Midnight = palette(C(129, 140, 248), C(11, 12, 22))
+	P.Crimson = palette(C(244, 63, 94), C(20, 11, 14))
+	P.Forest = palette(C(74, 222, 128), C(11, 19, 15))
+	P.Sunset = palette(C(251, 146, 60), C(22, 14, 14))
+	P.Mocha = palette(C(217, 168, 118), C(24, 19, 17))
+	P.Nord = palette(C(136, 192, 208), C(30, 34, 42), C(216, 222, 233))
+	P.Dracula = palette(C(189, 147, 249), C(26, 27, 38), C(248, 248, 242))
+	P.Cyber = palette(C(0, 255, 200), C(8, 10, 16))
+	P.Rose = palette(C(244, 114, 182), C(21, 14, 19))
+	P.Violet = palette(C(167, 139, 250), C(17, 14, 24))
+	P.Amber = palette(C(251, 191, 36), C(21, 18, 11))
+
+	function Library:AddPreset(name, tbl)
+		if type(name) == "string" and type(tbl) == "table" then
+			Library.Presets[name] = tbl
+		end
+	end
+
+	function Library:GetPresets(includeSeasons)
+		local out = {}
+		for k in pairs(Library.Presets) do
+			if includeSeasons or not (Seasons[k] ~= nil) then
+				out[#out + 1] = k
+			end
+		end
+		table.sort(out, function(a, b)
+			if a == "Default" then
+				return b ~= "Default"
+			elseif b == "Default" then
+				return false
+			end
+			return a < b
+		end)
+		return out
+	end
+
+	P.Halloween = {
 		Accent = C(255, 117, 24),
-		Background = C(16, 11, 22),
-		Sidebar = C(19, 13, 27),
-		Card = C(25, 17, 34),
-		Input = C(13, 9, 19),
-		Active = C(48, 28, 38),
-		Stroke = C(54, 35, 66),
-		StrokeLight = C(120, 66, 40),
-		Text = C(246, 234, 222),
-		Muted = C(174, 154, 164),
-		Dim = C(118, 100, 128),
-		Dot = C(120, 90, 110),
+		Background = C(15, 10, 21),
+		Sidebar = C(19, 12, 27),
+		Card = C(26, 17, 35),
+		Input = C(11, 8, 17),
+		Active = C(52, 28, 36),
+		Stroke = C(58, 36, 70),
+		StrokeLight = C(130, 66, 36),
+		Text = C(248, 236, 224),
+		Muted = C(180, 158, 170),
+		Dim = C(122, 102, 134),
+		Dot = C(140, 84, 60),
 		Notes = {
 			Green = { Text = C(132, 204, 22), Bg = C(30, 44, 14) },
 			Yellow = { Text = C(251, 146, 60), Bg = C(62, 34, 14) },
 			Red = { Text = C(244, 63, 94), Bg = C(64, 18, 34) },
-			Gray = { Text = C(170, 150, 175), Bg = C(38, 28, 46) },
+			Gray = { Text = C(172, 150, 178), Bg = C(38, 28, 46) },
 			Blue = { Text = C(192, 132, 252), Bg = C(42, 24, 66) },
 		},
 	}
-	Library.Presets.Christmas = {
+	P.Christmas = {
 		Accent = C(239, 68, 68),
-		Background = C(13, 22, 19),
-		Sidebar = C(15, 26, 22),
-		Card = C(19, 31, 27),
-		Input = C(11, 19, 16),
-		Active = C(52, 30, 32),
-		Stroke = C(34, 54, 46),
-		StrokeLight = C(110, 56, 56),
-		Text = C(244, 248, 245),
-		Muted = C(160, 180, 170),
-		Dim = C(100, 125, 112),
-		Dot = C(95, 125, 110),
+		Background = C(12, 21, 18),
+		Sidebar = C(14, 26, 21),
+		Card = C(19, 32, 27),
+		Input = C(9, 17, 14),
+		Active = C(56, 30, 32),
+		Stroke = C(34, 58, 48),
+		StrokeLight = C(120, 56, 56),
+		Text = C(246, 250, 246),
+		Muted = C(164, 186, 174),
+		Dim = C(100, 128, 114),
+		Dot = C(212, 170, 70),
 		Notes = {
 			Green = { Text = C(74, 222, 128), Bg = C(16, 54, 34) },
 			Yellow = { Text = C(250, 204, 21), Bg = C(60, 50, 14) },
 			Red = { Text = C(248, 113, 113), Bg = C(64, 22, 24) },
-			Gray = { Text = C(170, 185, 178), Bg = C(32, 44, 38) },
+			Gray = { Text = C(172, 188, 180), Bg = C(32, 44, 38) },
 			Blue = { Text = C(125, 211, 252), Bg = C(18, 44, 62) },
 		},
 	}
@@ -6021,19 +6088,19 @@ do
 	Seasons.Halloween = {
 		Preset = "Halloween",
 		Emoji = "🎃",
-		Glyphs = { Bat = "🦇", Ghost = "👻", Ember = "•", Web = "🕸️", Pumpkin = "🎃", Spider = "🕷️" },
+		Glyphs = { Bat = "🦇", Ghost = "👻", Ember = "•", Web = "🕸️", Pumpkin = "🎃", Spider = "🕷️", Moon = "🌕", Tomb = "🪦", Candle = "🕯️", Skull = "💀" },
 	}
 	Seasons.Christmas = {
 		Preset = "Christmas",
 		Emoji = "🎄",
-		Glyphs = { Flake = { "❄", "•", "✦", "❅" }, Tree = "🎄", Gift = "🎁", Snowman = "⛄" },
+		Glyphs = { Flake = { "❄", "•", "✦", "❅" }, Tree = "🎄", Gift = "🎁", Snowman = "⛄", Star = "✦", Sleigh = "🛷", Sparkle = "✨", Candy = "🍬", Bell = "🔔" },
 	}
 
+	-- ---- helpers ---------------------------------------------------------------
 	local function isAsset(g)
 		return type(g) == "string" and (g:find("^rbxassetid://") or g:find("^rbxasset://") or g:find("^http")) ~= nil
 	end
 
-	-- emoji/text glyph or an image, same interface either way
 	local function glyph(parent, g, size, props)
 		local obj
 		if isAsset(g) then
@@ -6078,6 +6145,51 @@ do
 	local function px(win)
 		return win.SizePx or Vector2.new(1000, 640)
 	end
+	local function round(parent, props)
+		props.Parent = parent
+		return create("Frame", props, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+	end
+
+	-- soft glow: stacked translucent discs (no assets needed)
+	local function glow(parent, color, size, pos, z, anchor)
+		local holder = create("Frame", {
+			BackgroundTransparency = 1,
+			Size = UDim2.fromOffset(size, size),
+			Position = pos,
+			AnchorPoint = anchor or Vector2.new(0.5, 0.5),
+			ZIndex = z,
+			Parent = parent,
+		})
+		local discs = {}
+		for i, k in ipairs({ 1, 0.72, 0.46 }) do
+			local d = round(holder, {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.fromScale(k, k),
+				BackgroundColor3 = color,
+				BackgroundTransparency = ({ 0.93, 0.88, 0.8 })[i],
+				ZIndex = z,
+			})
+			discs[i] = d
+		end
+		return holder, discs
+	end
+
+	local function wash(parent, color, rotation, a0, a1, z, size, pos, anchor)
+		return create("Frame", {
+			BackgroundColor3 = color,
+			Size = size or UDim2.fromScale(1, 1),
+			Position = pos or UDim2.new(),
+			AnchorPoint = anchor or Vector2.new(0, 0),
+			ZIndex = z,
+			Parent = parent,
+		}, {
+			create("UIGradient", {
+				Rotation = rotation,
+				Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, a0), NumberSequenceKeypoint.new(1, a1) }),
+			}),
+		})
+	end
 
 	local function santaHat(parent, w, pos, rot, z)
 		local h = w * 0.82
@@ -6093,10 +6205,16 @@ do
 		create("Frame", {
 			Position = UDim2.fromOffset(w * 0.1, h * 0.2),
 			Size = UDim2.fromOffset(w * 0.8, h * 0.62),
-			BackgroundColor3 = C(220, 38, 38),
+			BackgroundColor3 = C(214, 36, 48),
 			ZIndex = z or 6,
 			Parent = root,
-		}, { create("UICorner", { CornerRadius = UDim.new(0.5, 0) }) })
+		}, {
+			create("UICorner", { CornerRadius = UDim.new(0.5, 0) }),
+			create("UIGradient", {
+				Rotation = 90,
+				Color = ColorSequence.new(C(240, 70, 80), C(170, 20, 36)),
+			}),
+		})
 		create("Frame", {
 			Position = UDim2.fromOffset(0, h * 0.68),
 			Size = UDim2.fromOffset(w, h * 0.3),
@@ -6180,6 +6298,16 @@ do
 		win.FXUpdaters[#win.FXUpdaters + 1] = fn
 	end
 
+	local function windowStroke(win, cfg, colorAt, base)
+		local stroke = win.Main:FindFirstChildOfClass("UIStroke")
+		if stroke and cfg.Effects then
+			addUpdater(win, function(_, t)
+				stroke.Color = colorAt(t)
+				stroke.Thickness = (base or 1.5) + 0.5 * math.sin(t * 2.1)
+			end)
+		end
+	end
+
 	-- ---- Christmas -----------------------------------------------------------
 	local function sectionChristmas(win, sec, g)
 		if not sec.Card or sec.SeasonDecor then
@@ -6194,20 +6322,30 @@ do
 			Parent = sec.Card,
 		})
 		sec.SeasonDecor = holder
-		-- snow cap
+		-- snow cap with a few drifts
 		create("Frame", {
-			Position = UDim2.new(0, 22, 0, -9),
-			Size = UDim2.new(1, -90, 0, 6),
-			BackgroundColor3 = C(244, 248, 255),
+			Position = UDim2.new(0, 18, 0, -8),
+			Size = UDim2.new(1, -86, 0, 7),
+			BackgroundColor3 = C(246, 249, 255),
 			ZIndex = 4,
 			Parent = holder,
 		}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
-		for i = 1, 4 do
-			local d = math.random(8, 14)
-			create("Frame", {
-				Position = UDim2.new(rand(0.05, 0.7), 0, 0, -9 - d * 0.35),
+		for i = 1, 5 do
+			local d = math.random(8, 15)
+			round(holder, {
+				Position = UDim2.new(rand(0.04, 0.72), 0, 0, -8 - d * 0.4),
 				Size = UDim2.fromOffset(d * 2, d),
-				BackgroundColor3 = C(244, 248, 255),
+				BackgroundColor3 = C(246, 249, 255),
+				ZIndex = 4,
+			})
+		end
+		-- icicles hanging off the snow
+		for i = 1, 6 do
+			create("Frame", {
+				Position = UDim2.new(rand(0.05, 0.75), 0, 0, -3),
+				Size = UDim2.fromOffset(3, math.random(5, 11)),
+				BackgroundColor3 = C(200, 226, 250),
+				BackgroundTransparency = 0.25,
 				ZIndex = 4,
 				Parent = holder,
 			}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
@@ -6219,10 +6357,14 @@ do
 		local g = S.Glyphs
 		local size = px(win)
 		local decor, fx = layers.decor, layers.fx
+		local RED, GOLD, GREEN, BLUE = C(239, 68, 68), C(250, 204, 21), C(74, 222, 128), C(96, 165, 250)
 
 		if cfg.Decor then
 			pcall(function()
-				-- santa hats on logo and avatar
+				-- colour wash: warm red at the top, evergreen at the bottom
+				track(win, wash(decor, RED, 90, 0.9, 1, 47, UDim2.new(1, 0, 0.4, 0)))
+				track(win, wash(decor, GREEN, 270, 0.9, 1, 47, UDim2.new(1, 0, 0.4, 0), UDim2.fromScale(0, 1), Vector2.new(0, 1)))
+
 				local logoBox = win.LogoText and win.LogoText.Parent
 				if logoBox then
 					track(win, santaHat(logoBox, 28, UDim2.fromOffset(-7, -14), -18, 8))
@@ -6244,24 +6386,35 @@ do
 					Position = UDim2.new(1, -14, 1, -2),
 					ZIndex = 56,
 				}))
+				-- candy-cane trim under the top bar
+				local sx, step = 256, 12
+				local n = math.floor((size.X - sx) / step)
+				for i = 0, n - 1 do
+					track(win, create("Frame", {
+						Position = UDim2.fromOffset(sx + i * step, 64),
+						Size = UDim2.fromOffset(step / 2 + 1, 3),
+						BackgroundColor3 = (i % 2 == 0) and C(230, 50, 60) or C(250, 250, 252),
+						BackgroundTransparency = 0.15,
+						ZIndex = 53,
+						Parent = decor,
+					}))
+				end
 				-- snow drift along the bottom edge
 				local x = -20
 				while x < size.X do
 					local w = math.random(50, 110)
-					track(win, create("Frame", {
+					track(win, round(decor, {
 						Position = UDim2.new(0, x, 1, -rand(4, 9)),
 						Size = UDim2.fromOffset(w, math.random(14, 22)),
-						BackgroundColor3 = C(244, 248, 255),
+						BackgroundColor3 = C(246, 249, 255),
 						ZIndex = 54,
-						Parent = decor,
-					}, { create("UICorner", { CornerRadius = UDim.new(1, 0) }) }))
+					}))
 					x = x + w * 0.7
 				end
 				-- light garland along the top edge
-				local colors = { C(239, 68, 68), C(250, 204, 21), C(74, 222, 128), C(96, 165, 250) }
-				local swags = 7
+				local colors = { RED, GOLD, GREEN, BLUE }
+				local swags, per = 7, 8
 				local pts = {}
-				local per = 8
 				for i = 0, swags * per do
 					local frac = (i % per) / per
 					pts[#pts + 1] = { x = size.X * i / (swags * per), y = 3 + 6 * math.sin(math.pi * frac) }
@@ -6275,69 +6428,181 @@ do
 						Position = UDim2.fromOffset(mx, my),
 						Size = UDim2.fromOffset(len + 1, 2),
 						Rotation = math.deg(math.atan2(b.y - a.y, b.x - a.x)),
-						BackgroundColor3 = C(20, 70, 40),
+						BackgroundColor3 = C(20, 74, 42),
 						ZIndex = 55,
 						Parent = decor,
 					}))
 				end
 				win.SeasonBulbs = {}
+				win.SeasonHalos = {}
 				for i = 2, #pts - 1, 2 do
 					local p = pts[i]
+					local col = colors[math.floor(i / 2) % #colors + 1]
+					local halo = track(win, glow(decor, col, 26, UDim2.fromOffset(p.x, p.y + 6), 54))
 					local bulb = track(win, create("Frame", {
 						AnchorPoint = Vector2.new(0.5, 0),
 						Position = UDim2.fromOffset(p.x, p.y),
 						Size = UDim2.fromOffset(8, 11),
-						BackgroundColor3 = colors[math.floor(i / 2) % #colors + 1],
+						BackgroundColor3 = col,
 						ZIndex = 56,
 						Parent = decor,
 					}, { create("UICorner", { CornerRadius = UDim.new(0.5, 0) }) }))
 					win.SeasonBulbs[#win.SeasonBulbs + 1] = bulb
+					win.SeasonHalos[#win.SeasonHalos + 1] = halo
+				end
+				-- hanging ornaments that sway
+				local orn = {}
+				local ocol = { RED, GOLD, BLUE, C(244, 114, 182) }
+				for i = 4, #pts - 2, 6 do
+					local p = pts[i]
+					local len = math.random(14, 26)
+					local root = track(win, create("Frame", {
+						AnchorPoint = Vector2.new(0.5, 0),
+						Position = UDim2.fromOffset(p.x, p.y + 6),
+						Size = UDim2.fromOffset(14, len + 14),
+						BackgroundTransparency = 1,
+						ZIndex = 57,
+						Parent = decor,
+					}))
+					create("Frame", {
+						AnchorPoint = Vector2.new(0.5, 0),
+						Position = UDim2.new(0.5, 0, 0, 0),
+						Size = UDim2.fromOffset(1, len),
+						BackgroundColor3 = C(230, 230, 235),
+						BackgroundTransparency = 0.3,
+						ZIndex = 57,
+						Parent = root,
+					})
+					local ball = round(root, {
+						AnchorPoint = Vector2.new(0.5, 0),
+						Position = UDim2.new(0.5, 0, 0, len - 1),
+						Size = UDim2.fromOffset(14, 14),
+						BackgroundColor3 = ocol[(i % #ocol) + 1],
+						ZIndex = 57,
+					})
+					round(ball, { Position = UDim2.fromOffset(3, 2), Size = UDim2.fromOffset(4, 4), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0.35, ZIndex = 58 })
+					orn[#orn + 1] = { o = root, ph = rand(0, TAU) }
+				end
+				-- twinkling stars
+				local stars = {}
+				for i = 1, 7 do
+					local s = glyph(decor, g.Star, math.random(10, 16), {
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Position = UDim2.new(rand(0.04, 0.96), 0, 0, rand(36, 150)),
+						TextColor3 = (i % 2 == 0) and GOLD or C(255, 255, 255),
+						ZIndex = 52,
+					})
+					track(win, s)
+					stars[i] = { o = s, ph = rand(0, TAU), sp = rand(1.2, 3) }
 				end
 				if cfg.Effects then
 					addUpdater(win, function(_, t)
 						for i, b in ipairs(win.SeasonBulbs) do
-							b.BackgroundTransparency = 0.45 * (0.5 + 0.5 * math.sin(t * 2.6 + i * 1.7))
+							local k = 0.5 + 0.5 * math.sin(t * 2.6 + i * 1.7)
+							b.BackgroundTransparency = 0.4 * (1 - k)
+							local halo = win.SeasonHalos[i]
+							if halo then
+								halo.Size = UDim2.fromOffset(20 + 12 * k, 20 + 12 * k)
+							end
+						end
+						for _, o in ipairs(orn) do
+							o.o.Rotation = math.sin(t * 1.4 + o.ph) * 9
+						end
+						for _, s in ipairs(stars) do
+							setAlpha(s.o, 0.7 - 0.65 * (0.5 + 0.5 * math.sin(t * s.sp + s.ph)))
 						end
 					end)
 				end
+				windowStroke(win, cfg, function(t)
+					local k = (t * 0.25) % 3
+					local a, b
+					if k < 1 then
+						a, b = RED, GOLD
+					elseif k < 2 then
+						a, b, k = GOLD, GREEN, k - 1
+					else
+						a, b, k = GREEN, RED, k - 2
+					end
+					return a:Lerp(b, k)
+				end)
 			end)
-			-- cards + nav
 			for _, page in ipairs(win.Pages) do
 				win:_seasonPage(page)
 			end
 		end
 
 		if cfg.Effects then
-			local n = math.floor(46 * cfg.Intensity)
+			-- three depth layers of snow (small/slow/faint -> big/fast/bright)
+			local n = math.floor(54 * cfg.Intensity)
 			local flakes = {}
 			for i = 1, n do
-				local s = math.random(7, 17)
+				local depth = (i % 3) + 1
+				local s = 5 + depth * 4 + math.random(0, 3)
 				local lbl = track(win, glyph(fx, pick(g.Flake), s, {
 					AnchorPoint = Vector2.new(0.5, 0.5),
-					ZIndex = 60,
+					ZIndex = 58 + depth,
 					TextColor3 = C(240, 246, 255),
 				}))
-				setAlpha(lbl, rand(0.1, 0.55))
+				setAlpha(lbl, 0.78 - depth * 0.16 + rand(0, 0.1))
 				flakes[i] = {
 					o = lbl,
 					x = math.random(),
 					y = math.random(),
-					vy = rand(0.07, 0.2) * (s / 12),
+					vy = rand(0.04, 0.09) * depth,
 					ph = rand(0, TAU),
-					fr = rand(0.6, 1.6),
-					amp = rand(0.006, 0.02),
-					vr = rand(-40, 40),
+					fr = rand(0.5, 1.4),
+					amp = rand(0.004, 0.012) * depth,
+					vr = rand(-50, 50),
+					wind = 0.004 * depth,
 				}
 			end
+			-- Santa's sleigh sweeps across now and then
+			local sleigh = track(win, glyph(fx, g.Sleigh, 26, { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 62 }))
+			sleigh.Visible = false
+			local sparks = {}
+			for i = 1, 6 do
+				local sp = track(win, glyph(fx, g.Sparkle, 12, { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 61 }))
+				sp.Visible = false
+				sparks[i] = sp
+			end
+			local sl = { on = false, x = -0.1, y = 0.2, next = rand(8, 16) }
 			addUpdater(win, function(dt, t)
 				for _, f in ipairs(flakes) do
 					f.y = f.y + f.vy * dt
+					f.x = f.x + f.wind * dt
 					if f.y > 1.04 then
 						f.y = -0.04
 						f.x = math.random()
 					end
+					if f.x > 1.05 then
+						f.x = -0.05
+					end
 					f.o.Position = UDim2.fromScale(f.x + math.sin(t * f.fr + f.ph) * f.amp, f.y)
 					f.o.Rotation = (f.o.Rotation + f.vr * dt) % 360
+				end
+				if not sl.on then
+					sl.next = sl.next - dt
+					if sl.next <= 0 then
+						sl.on, sl.x, sl.y = true, -0.08, rand(0.12, 0.45)
+						sleigh.Visible = true
+					end
+				else
+					sl.x = sl.x + 0.12 * dt
+					local y = sl.y + math.sin(sl.x * 9) * 0.02
+					sleigh.Position = UDim2.fromScale(sl.x, y)
+					sleigh.Rotation = math.sin(sl.x * 9) * -8
+					for i, sp in ipairs(sparks) do
+						sp.Visible = true
+						sp.Position = UDim2.fromScale(sl.x - i * 0.03, y + math.sin(t * 6 + i) * 0.015)
+						setAlpha(sp, math.clamp(0.25 + i * 0.12, 0, 1))
+					end
+					if sl.x > 1.1 then
+						sl.on, sl.next = false, rand(14, 26)
+						sleigh.Visible = false
+						for _, sp in ipairs(sparks) do
+							sp.Visible = false
+						end
+					end
 				end
 			end)
 		end
@@ -6357,11 +6622,23 @@ do
 			Parent = sec.Card,
 		})
 		sec.SeasonDecor = holder
-		local web = glyph(holder, g.Web, 26, { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -4, 0, -8), Rotation = 90, ZIndex = 5 })
-		setAlpha(web, 0.35)
+		local web = glyph(holder, g.Web, 28, { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -4, 0, -8), Rotation = 90, ZIndex = 5 })
+		setAlpha(web, 0.3)
+		-- little slime drips off the top edge
+		for i = 1, 3 do
+			round(holder, {
+				Position = UDim2.new(rand(0.08, 0.7), 0, 0, -3),
+				Size = UDim2.fromOffset(math.random(5, 8), math.random(8, 16)),
+				BackgroundColor3 = C(112, 190, 20),
+				BackgroundTransparency = 0.15,
+				ZIndex = 4,
+			})
+		end
 		local n = (sec.Tab and #sec.Tab.Sections) or 1
 		if n % 2 == 0 then
 			glyph(holder, g.Pumpkin, 18, { Position = UDim2.new(0, 10, 0, -14), Rotation = -12, ZIndex = 5 })
+		else
+			glyph(holder, g.Candle, 16, { Position = UDim2.new(0, 10, 0, -13), ZIndex = 5 })
 		end
 	end
 
@@ -6369,9 +6646,14 @@ do
 		local g = S.Glyphs
 		local size = px(win)
 		local decor, fx = layers.decor, layers.fx
+		local ORANGE, PURPLE = C(255, 117, 24), C(150, 70, 220)
 
 		if cfg.Decor then
 			pcall(function()
+				-- colour wash: ember-orange at the top, haunted purple at the bottom
+				track(win, wash(decor, ORANGE, 90, 0.9, 1, 47, UDim2.new(1, 0, 0.4, 0)))
+				track(win, wash(decor, PURPLE, 270, 0.88, 1, 47, UDim2.new(1, 0, 0.45, 0), UDim2.fromScale(0, 1), Vector2.new(0, 1)))
+
 				local logoBox = win.LogoText and win.LogoText.Parent
 				local avatar = win.AvatarImage and win.AvatarImage.Parent
 				if logoBox and logoBox.Parent then
@@ -6379,6 +6661,19 @@ do
 				end
 				if avatar and avatar.Parent then
 					track(win, glyph(avatar.Parent, g.Pumpkin, 20, { Position = UDim2.fromOffset(40, 10), Rotation = 10, ZIndex = 8 }))
+				end
+				-- pale moon with a halo, tucked into the top-right corner
+				local moonHalo = track(win, glow(decor, C(255, 236, 190), 150, UDim2.new(1, -52, 0, 70), 49))
+				local moon = track(win, round(decor, {
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.new(1, -52, 0, 70),
+					Size = UDim2.fromOffset(54, 54),
+					BackgroundColor3 = C(255, 240, 205),
+					BackgroundTransparency = 0.25,
+					ZIndex = 50,
+				}))
+				for _, c in ipairs({ { 12, 14, 9 }, { 30, 26, 7 }, { 22, 36, 5 } }) do
+					round(moon, { Position = UDim2.fromOffset(c[1], c[2]), Size = UDim2.fromOffset(c[3], c[3]), BackgroundColor3 = C(220, 205, 170), BackgroundTransparency = 0.45, ZIndex = 51 })
 				end
 				-- cobwebs in every corner
 				local corners = {
@@ -6388,8 +6683,17 @@ do
 					{ Vector2.new(0, 1), UDim2.fromScale(0, 1), 270 },
 				}
 				for _, c in ipairs(corners) do
-					local w = track(win, glyph(decor, g.Web, 64, { AnchorPoint = c[1], Position = c[2], Rotation = c[3], ZIndex = 55 }))
-					setAlpha(w, 0.4)
+					local w = track(win, glyph(decor, g.Web, 68, { AnchorPoint = c[1], Position = c[2], Rotation = c[3], ZIndex = 55 }))
+					setAlpha(w, 0.38)
+				end
+				-- tombstones + candles along the sidebar bottom
+				for i, x in ipairs({ 14, 58, 104, 156, 204 }) do
+					local isTomb = i % 2 == 1
+					track(win, glyph(decor, isTomb and g.Tomb or g.Candle, isTomb and 22 or 16, {
+						AnchorPoint = Vector2.new(0, 1),
+						Position = UDim2.new(0, x, 1, isTomb and -76 or -78),
+						ZIndex = 53,
+					}))
 				end
 				-- slime dripping from the top edge
 				local slime = C(112, 190, 20)
@@ -6413,14 +6717,6 @@ do
 					drips[#drips + 1] = { o = body, base = rand(8, 24), ph = rand(0, TAU), sp = rand(0.5, 1.2) }
 					x = x + math.random(46, 130)
 				end
-				if cfg.Effects then
-					addUpdater(win, function(_, t)
-						for _, d in ipairs(drips) do
-							local l = d.base + 5 * math.sin(t * d.sp + d.ph)
-							d.o.Size = UDim2.fromOffset(d.o.Size.X.Offset, l)
-						end
-					end)
-				end
 				-- dangling spider
 				local thread = track(win, create("Frame", {
 					Position = UDim2.new(0, size.X * 0.585, 0, 0),
@@ -6435,30 +6731,82 @@ do
 					Position = UDim2.new(0, size.X * 0.585, 0, 38),
 					ZIndex = 56,
 				}))
+				-- pairs of eyes that blink in the dark
+				local eyes = {}
+				for i = 1, 4 do
+					local ex, ey = rand(0.3, 0.95), rand(0.55, 0.92)
+					local pair = track(win, create("Frame", {
+						BackgroundTransparency = 1,
+						Position = UDim2.fromScale(ex, ey),
+						Size = UDim2.fromOffset(26, 8),
+						ZIndex = 51,
+						Parent = decor,
+					}))
+					local col = (i % 2 == 0) and C(255, 220, 60) or C(255, 80, 60)
+					round(pair, { Size = UDim2.fromOffset(8, 5), BackgroundColor3 = col, ZIndex = 51 })
+					round(pair, { Position = UDim2.fromOffset(16, 0), Size = UDim2.fromOffset(8, 5), BackgroundColor3 = col, ZIndex = 51 })
+					eyes[i] = { o = pair, next = rand(2, 9), open = true, t0 = 0 }
+					pair.Visible = false
+				end
+				-- lightning flash
+				local flash = track(win, create("Frame", {
+					Size = UDim2.fromScale(1, 1),
+					BackgroundColor3 = C(235, 225, 255),
+					BackgroundTransparency = 1,
+					ZIndex = 62,
+					Parent = decor,
+				}))
+				local fl = { next = rand(10, 20), phase = 0 }
+
 				if cfg.Effects then
-					addUpdater(win, function(_, t)
+					addUpdater(win, function(dt, t)
+						for _, d in ipairs(drips) do
+							local l = d.base + 5 * math.sin(t * d.sp + d.ph)
+							d.o.Size = UDim2.fromOffset(d.o.Size.X.Offset, l)
+						end
 						local len = 34 + 22 * (0.5 + 0.5 * math.sin(t * 0.8))
 						thread.Size = UDim2.fromOffset(1, len)
 						spider.Position = UDim2.new(0, size.X * 0.585, 0, len - 2)
+						for _, e in ipairs(eyes) do
+							e.next = e.next - dt
+							if e.next <= 0 then
+								e.open = not e.open
+								e.o.Visible = e.open
+								e.next = e.open and rand(1.2, 3) or rand(3, 9)
+							end
+						end
+						-- lightning: two quick flashes, then a long pause
+						fl.next = fl.next - dt
+						if fl.next <= 0 and fl.phase == 0 then
+							fl.phase, fl.t = 1, 0
+						end
+						if fl.phase > 0 then
+							fl.t = fl.t + dt
+							local a = 1
+							if fl.t < 0.07 then
+								a = 0.82
+							elseif fl.t < 0.15 then
+								a = 1
+							elseif fl.t < 0.22 then
+								a = 0.86
+							elseif fl.t < 0.5 then
+								a = 0.86 + (fl.t - 0.22) / 0.28 * 0.14
+							else
+								fl.phase, fl.next = 0, rand(12, 28)
+							end
+							flash.BackgroundTransparency = a
+						end
+						local k = 0.5 + 0.5 * math.sin(t * 0.6)
+						moon.BackgroundTransparency = 0.25 + 0.1 * k
 					end)
-				end
-				-- pulsing window glow
-				local stroke = win.Main:FindFirstChildOfClass("UIStroke")
-				if stroke and cfg.Effects then
-					addUpdater(win, function(_, t)
-						stroke.Color = C(255, 117, 24):Lerp(C(150, 70, 220), 0.5 + 0.5 * math.sin(t * 1.3))
-						stroke.Thickness = 1.5 + 0.5 * math.sin(t * 2.1)
-					end)
-				end
-				-- drifting fog
-				if cfg.Effects then
+					-- fog banks
 					local fogs = {}
-					for i = 1, 2 do
+					for i = 1, 3 do
 						local f = track(win, create("Frame", {
 							AnchorPoint = Vector2.new(0, 1),
 							Position = UDim2.fromScale(-0.3, 1),
-							Size = UDim2.new(1.6, 0, 0, 110),
-							BackgroundColor3 = C(150, 120, 190),
+							Size = UDim2.new(1.6, 0, 0, 90 + i * 24),
+							BackgroundColor3 = i == 2 and C(170, 110, 200) or C(150, 120, 190),
 							ZIndex = 52,
 							Parent = decor,
 						}, {
@@ -6466,11 +6814,11 @@ do
 								Rotation = 90,
 								Transparency = NumberSequence.new({
 									NumberSequenceKeypoint.new(0, 1),
-									NumberSequenceKeypoint.new(1, 0.82),
+									NumberSequenceKeypoint.new(1, 0.84 - i * 0.02),
 								}),
 							}),
 						}))
-						fogs[i] = { o = f, sp = i == 1 and 0.012 or -0.008, x = i == 1 and -0.3 or -0.1 }
+						fogs[i] = { o = f, sp = (i % 2 == 0 and -1 or 1) * (0.006 + i * 0.004), x = -0.1 - i * 0.12 }
 					end
 					addUpdater(win, function(dt)
 						for _, f in ipairs(fogs) do
@@ -6484,6 +6832,9 @@ do
 						end
 					end)
 				end
+				windowStroke(win, cfg, function(t)
+					return ORANGE:Lerp(PURPLE, 0.5 + 0.5 * math.sin(t * 1.3))
+				end)
 			end)
 			for _, page in ipairs(win.Pages) do
 				win:_seasonPage(page)
@@ -6491,23 +6842,20 @@ do
 		end
 
 		if cfg.Effects then
-			-- embers
 			local embers = {}
-			for i = 1, math.floor(26 * cfg.Intensity) do
-				local s = math.random(10, 18)
-				local o = track(win, glyph(fx, g.Ember, s, { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 60, TextColor3 = C(255, 140, 40) }))
-				embers[i] = { o = o, x = math.random(), y = math.random(), vy = -rand(0.04, 0.12), ph = rand(0, TAU), amp = rand(0.004, 0.014) }
+			for i = 1, math.floor(30 * cfg.Intensity) do
+				local s = math.random(10, 20)
+				local o = track(win, glyph(fx, g.Ember, s, { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 60, TextColor3 = (i % 3 == 0) and C(255, 200, 60) or C(255, 120, 40) }))
+				embers[i] = { o = o, x = math.random(), y = math.random(), vy = -rand(0.04, 0.13), ph = rand(0, TAU), amp = rand(0.004, 0.016) }
 			end
-			-- bats
 			local bats = {}
-			for i = 1, math.max(2, math.floor(5 * cfg.Intensity)) do
-				local o = track(win, glyph(fx, g.Bat, math.random(18, 26), { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 61 }))
-				bats[i] = { o = o, x = rand(-0.2, 1.1), y = rand(0.08, 0.7), vx = rand(0.06, 0.16), ph = rand(0, TAU) }
+			for i = 1, math.max(2, math.floor(6 * cfg.Intensity)) do
+				local o = track(win, glyph(fx, g.Bat, math.random(16, 28), { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 61 }))
+				bats[i] = { o = o, x = rand(-0.2, 1.1), y = rand(0.08, 0.7), vx = rand(0.06, 0.18), ph = rand(0, TAU) }
 			end
-			-- ghosts
 			local ghosts = {}
 			for i = 1, math.max(1, math.floor(3 * cfg.Intensity)) do
-				local o = track(win, glyph(fx, g.Ghost, math.random(24, 34), { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 59 }))
+				local o = track(win, glyph(fx, g.Ghost, math.random(24, 36), { AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 59 }))
 				ghosts[i] = { o = o, x = rand(0.1, 0.9), y = rand(0.2, 1.1), vy = -rand(0.015, 0.04), ph = rand(0, TAU) }
 			end
 			addUpdater(win, function(dt, t)
@@ -6526,8 +6874,8 @@ do
 						b.x = -0.1
 						b.y = rand(0.08, 0.7)
 					end
-					b.o.Position = UDim2.fromScale(b.x, b.y + math.sin(t * 3 + b.ph) * 0.025)
-					b.o.Rotation = math.sin(t * 5 + b.ph) * 14
+					b.o.Position = UDim2.fromScale(b.x, b.y + math.sin(t * 3 + b.ph) * 0.03)
+					b.o.Rotation = math.sin(t * 7 + b.ph) * 16
 				end
 				for _, gh in ipairs(ghosts) do
 					gh.y = gh.y + gh.vy * dt
@@ -6536,7 +6884,7 @@ do
 						gh.x = rand(0.1, 0.9)
 					end
 					gh.o.Position = UDim2.fromScale(gh.x + math.sin(t * 0.7 + gh.ph) * 0.03, gh.y)
-					setAlpha(gh.o, 0.55 + 0.2 * math.sin(t * 1.6 + gh.ph))
+					setAlpha(gh.o, 0.5 + 0.2 * math.sin(t * 1.6 + gh.ph))
 				end
 			end)
 		end
@@ -6633,11 +6981,10 @@ do
 		local fx
 		if c.Screen then
 			fx = newLayer(self.Gui, "SeasonParticles", 1, false)
-			self.SeasonFXParticles = fx
 		else
 			fx = newLayer(self.Main, "SeasonParticles", 49, true)
-			self.SeasonFXParticles = fx
 		end
+		self.SeasonFXParticles = fx
 		self.ParticleLayer = fx
 		local layers = { decor = decor, fx = fx }
 		self.FXObjects = self.FXObjects or {}
