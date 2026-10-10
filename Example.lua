@@ -1,4 +1,4 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/driffiti/Reduce/main/Library.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/driffiti/ReduceUI/main/Library.lua"))()
 
 Library:SetConfigFolder("ReduceUI/configs")
 
